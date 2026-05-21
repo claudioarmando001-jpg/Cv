@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SaaS Premium CV Builder Ultimate Enterprise</title>
+    <title>SaaS Premium CV Builder Enterprise v3</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Motores Avançados de Renderização de PDF -->
+    <!-- Motores de Renderização de PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
@@ -31,7 +31,7 @@
             --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
             --glass-bg: rgba(255, 255, 255, 0.85);
             --glass-border: rgba(226, 232, 240, 0.8);
-            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: all 0.2s ease;
         }
 
         [data-theme="dark"] {
@@ -59,7 +59,7 @@
             overflow-x: hidden;
         }
 
-        /* --- LOADER & TOASTS --- */
+        /* --- NOTIFICAÇÕES E CARREGAMENTO --- */
         #loader { position: fixed; inset: 0; background: var(--bg-main); z-index: 999999; display: flex; align-items: center; justify-content: center; transition: opacity 0.3s ease; }
         .spinner { width: 40px; height: 40px; border: 3px solid var(--border-color); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -67,7 +67,7 @@
         .toast { background: var(--bg-surface); color: var(--text-main); padding: 1rem 1.5rem; border-radius: var(--radius-md); box-shadow: var(--shadow-lg); border-left: 4px solid var(--accent); animation: slideIn 0.3s forwards; font-weight: 600; font-size: 0.85rem; border-top: 1px solid var(--border-color); }
         @keyframes slideIn { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* --- NAVBAR HEADER --- */
+        /* --- BARRA TOP NAVIGATION --- */
         header {
             background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100;
@@ -77,7 +77,6 @@
         .logo-area span { color: var(--accent); }
         .header-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
 
-        /* CONTROLES DE DESIGN */
         .color-picker-group { display: flex; gap: 0.35rem; align-items: center; background: var(--bg-surface-secondary); padding: 0.35rem; border-radius: 30px; }
         .color-dot { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; transition: var(--transition); border: 2px solid transparent; }
         .color-dot.active { border-color: var(--text-main); transform: scale(1.15); }
@@ -85,7 +84,6 @@
         .theme-switch::before { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: var(--text-main); border-radius: 50%; transition: var(--transition); }
         [data-theme="dark"] .theme-switch::before { transform: translateX(20px); background: var(--accent); }
 
-        /* BOTÕES MESTRES */
         .btn { background: var(--accent); color: white; border: none; padding: 0.6rem 1.15rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
         .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
         .btn-sec { background: var(--bg-surface-secondary); color: var(--text-main); }
@@ -93,12 +91,12 @@
         .btn-danger { background: #fee2e2; color: #ef4444; }
         .btn-danger:hover { background: #ef4444; color: white; }
 
-        /* --- WORKSPACE ARCHITECTURE --- */
+        /* --- CONTAINER DE TRABALHO RESPONSIVO --- */
         .app-container { display: grid; grid-template-columns: 1fr; min-height: calc(100vh - 70px); }
         @media (min-width: 1024px) { .app-container { grid-template-columns: 460px 1fr; } }
         @media (min-width: 1400px) { .app-container { grid-template-columns: 500px 1fr; } }
 
-        /* FORM PANEL (ESQUERDA) */
+        /* PAINEL DE CONTROLE (ESQUERDA) */
         .control-panel { padding: 1.25rem; border-right: 1px solid var(--border-color); background: var(--bg-surface); max-height: calc(100vh - 70px); overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; }
         .tabs-nav { display: flex; gap: 0.25rem; background: var(--bg-surface-secondary); padding: 0.25rem; border-radius: var(--radius-md); overflow-x: auto; position: sticky; top: 0; z-index: 20; }
         .tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 0.5rem 0.75rem; border-radius: calc(var(--radius-md) - 2px); cursor: pointer; font-weight: 600; font-size: 0.8rem; flex: 1; white-space: nowrap; transition: var(--transition); }
@@ -106,12 +104,11 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* CONTROL ELEMENTS */
+        /* INTERRUPTORES GLOBAIS DE EXCLUSÃO */
         .section-header-toggle { display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 1rem; }
         .section-header-toggle h3 { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .inline-toggle-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; }
+        .inline-toggle-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; }
 
-        /* PURE CSS PREMIUM SWITCH */
         .switch-control { position: relative; display: inline-block; width: 36px; height: 20px; }
         .switch-control input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; inset: 0; background-color: var(--border-color); transition: .2s; border-radius: 20px; }
@@ -126,7 +123,7 @@
         .row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
         textarea.form-control { resize: vertical; min-height: 65px; }
 
-        /* REPEATER LISTS */
+        /* LISTAS DINÂMICAS REPEATER */
         .repeater-list { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
         .repeater-item { background: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; position: relative; cursor: grab; padding-left: 1.75rem; }
         .repeater-item::before { content: '⋮⋮'; position: absolute; left: 6px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem; }
@@ -135,7 +132,7 @@
         .tags-output-container { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
         .visual-tag { background: var(--accent); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
 
-        /* PREVIEW AREA (DIREITA) */
+        /* PAINEL DE PRÉ-VISUALIZAÇÃO (DIREITA) */
         .preview-panel { background: #cbd5e1; padding: 1.5rem 1rem; display: flex; justify-content: center; align-items: flex-start; overflow-y: auto; max-height: calc(100vh - 70px); }
         [data-theme="dark"] .preview-panel { background: #020617; background-image: radial-gradient(var(--border-color) 1px, transparent 1px); background-size: 20px 20px; }
         .preview-sticky { position: sticky; top: 0; width: 100%; max-width: 210mm; display: flex; flex-direction: column; gap: 1rem; }
@@ -151,10 +148,9 @@
         .cv-canvas {
             background: #ffffff; color: #1e293b; width: 100%; min-height: 296mm; padding: 18mm 16mm;
             box-shadow: var(--shadow-lg); box-sizing: border-box; font-size: 13px; line-height: 1.5;
-            position: relative; overflow: hidden;
+            position: relative; overflow: hidden; display: flex; flex-direction: column;
         }
 
-        /* Classes Utilitárias Internas */
         .cv-section { margin-bottom: 1.25rem; }
         .cv-section-title { font-size: 0.95rem; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.15rem; margin-bottom: 0.6rem; color: #0f172a; letter-spacing: 0.5px; }
         .cv-header { margin-bottom: 1.25rem; display: flex; gap: 1.25rem; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; }
@@ -168,9 +164,14 @@
         .cv-tags-list { display: flex; flex-wrap: wrap; gap: 0.3rem; }
         .cv-tag { background: #f1f5f9; color: #334155; padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.75rem; font-weight: 500; }
         .cv-text-block { white-space: pre-line; color: #334155; font-size: 0.825rem; }
+        .cv-body-content { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
+
+        /* CONTÊNDORES DE FLUXO PARA MUDANÇA DE TEMPLATE */
+        #cv-main-stream { display: flex; flex-direction: column; gap: 1rem; }
+        #cv-sidebar-stream { display: flex; flex-direction: column; gap: 1rem; }
 
         /* ==========================================================================
-           COMPLEMENTO DE TEMPLATES (1 ATÉ 12)
+           CATÁLOGO COMPLETO DE TEMPLATES (1 ATÉ 12)
            ========================================================================== */
         /* 1. EXECUTIVO */
         .cv-canvas.tmpl-executivo { font-family: 'Georgia', serif; }
@@ -179,11 +180,9 @@
         .cv-canvas.tmpl-minimalista { padding: 20mm; }
         .cv-canvas.tmpl-minimalista .cv-section-title { border-bottom: none; font-weight: 600; position:relative; }
         .cv-canvas.tmpl-minimalista .cv-section-title::after { content: ''; position: absolute; bottom: 0; left: 0; width: 20px; height: 2px; background: #000; }
-        /* 3. CRIATIVO ASYMMETRIC */
-        .cv-canvas.tmpl-criativo { display: grid; grid-template-columns: 1fr 1.8fr; gap: 1.25rem; padding: 0; }
-        .cv-canvas.tmpl-criativo .cv-sidebar { background: #f8fafc; padding: 12mm 6mm; border-right: 1px solid #e2e8f0; }
-        .cv-canvas.tmpl-criativo .cv-mainbar { padding: 12mm 10mm 12mm 2mm; }
-        .cv-canvas.tmpl-criativo .cv-header { grid-column: span 2; padding: 12mm 10mm 0 10mm; margin: 0; border: none; }
+        /* 3. CRIATIVO ASYMMETRIC (Split columns) */
+        .cv-canvas.tmpl-criativo .cv-body-content { display: grid; grid-template-columns: 1fr 1.8fr; gap: 1.25rem; }
+        .cv-canvas.tmpl-criativo .cv-sidebar-wrapper { background: #f8fafc; padding: 4mm; border-right: 1px solid #e2e8f0; }
         /* 4. CORPORATIVO SOLID */
         .cv-canvas.tmpl-corporativo { padding: 0; }
         .cv-canvas.tmpl-corporativo .cv-header { background: #0f172a; color: white; padding: 12mm 16mm; margin-bottom: 1.25rem; border: none; }
@@ -204,31 +203,25 @@
         /* 8. TECNICO ATS */
         .cv-canvas.tmpl-tecnico-ats { font-family: 'Courier New', monospace; color: #000; }
         .cv-canvas.tmpl-tecnico-ats .cv-section-title { border-bottom: 1px solid #000; color: #000; }
-        .cv-canvas.tmpl-tecnico-ats .cv-tag::after { content: ', '; }
-        .cv-canvas.tmpl-tecnico-ats .cv-tag:last-child::after { content: ''; }
-        
-        /* NEW: 9. MINIMALISTA DARK MATRIX */
+        /* 9. MINIMALISTA DARK MATRIX */
         .cv-canvas.tmpl-dark-matrix { background: #070a13; color: #a1a1aa; font-family: monospace; }
         .cv-canvas.tmpl-dark-matrix .cv-name { color: #f4f4f5; }
         .cv-canvas.tmpl-dark-matrix .cv-section-title { border-bottom: 1px solid var(--accent); color: var(--accent); }
         .cv-canvas.tmpl-dark-matrix .cv-item-header { color: #e4e4e7; }
-
-        /* NEW: 10. EXECUTIVE LEFT BORDER */
+        /* 10. EXECUTIVE LEFT BORDER */
         .cv-canvas.tmpl-left-border { border-left: 8mm solid var(--accent); }
         .cv-canvas.tmpl-left-border .cv-section-title { color: var(--accent); border-bottom-color: var(--accent); }
-
-        /* NEW: 11. ACADEMIC CHRONOS */
+        /* 11. ACADEMIC CHRONOS */
         .cv-canvas.tmpl-academic { font-family: 'Times New Roman', Times, serif; }
         .cv-canvas.tmpl-academic .cv-section-title { border-bottom: 1px solid #000; text-align: left; font-size: 1.1rem; }
         .cv-canvas.tmpl-academic .cv-name { font-size: 2rem; text-align: center; display: block; width: 100%; }
         .cv-canvas.tmpl-academic .cv-header { flex-direction: column; text-align: center; }
         .cv-canvas.tmpl-academic .cv-meta { justify-content: center; }
-
-        /* NEW: 12. CREATIVE NEO-GLOW */
+        /* 12. CREATIVE NEO-GLOW */
         .cv-canvas.tmpl-neo-glow .cv-section { background: #fafafa; padding: 1rem; border-radius: 6px; border-left: 4px solid var(--accent); }
         .cv-canvas.tmpl-neo-glow .cv-section-title { border: none; color: var(--text-main); }
 
-        /* PIPELINE DE CONVERSÃO DE PDF CONTROLADA */
+        /* FORCE RENDERING ISOLATION FOR PDF TARGET */
         .pdf-render-mode { width: 210mm !important; min-height: 297mm !important; max-width: 210mm !important; position: absolute !important; left: 0 !important; top: 0 !important; z-index: -99999 !important; background: #ffffff !important; transform: none !important; }
     </style>
 </head>
@@ -251,13 +244,13 @@
             </div>
             <div class="theme-switch" id="theme-toggle"></div>
             <button class="btn btn-sec btn-danger" onclick="clearData()">Resetar</button>
-            <button class="btn" onclick="exportPixelPerfectPDF()">Exportar PDF Magnificado (M1)</button>
+            <button class="btn" onclick="exportPixelPerfectPDF()">Exportar PDF Magnificado</button>
         </div>
     </header>
 
     <div class="app-container">
         <!-- CONTROL PANEL -->
-               <aside class="control-panel">
+              <aside class="control-panel">
             <nav class="tabs-nav">
                 <button class="tab-btn active" onclick="switchTab(event, 'tab-dados')">Dados</button>
                 <button class="tab-btn" onclick="switchTab(event, 'tab-experiencia')">Carreira</button>
@@ -347,7 +340,7 @@
                     </label>
                 </div>
                 <div id="repeater-experience" class="repeater-list"></div>
-                <button class="btn btn-sec" style="width:100%" onclick="createRepeater('experience')">+ Adicionar Experiência</button>
+                <button class="btn btn-sec" style="width:100%" onclick="addNewRepeaterItem('experience')">+ Adicionar Experiência</button>
             </div>
 
             <!-- TAB: EDUCAÇÃO REPEATER -->
@@ -360,7 +353,7 @@
                     </label>
                 </div>
                 <div id="repeater-education" class="repeater-list"></div>
-                <button class="btn btn-sec" style="width:100%" onclick="createRepeater('education')">+ Adicionar Educação</button>
+                <button class="btn btn-sec" style="width:100%" onclick="addNewRepeaterItem('education')">+ Adicionar Educação</button>
             </div>
 
             <!-- TAB: PROJETOS REPEATER -->
@@ -373,9 +366,10 @@
                     </label>
                 </div>
                 <div id="repeater-projects" class="repeater-list"></div>
-                <button class="btn btn-sec" style="width:100%" onclick="createRepeater('projects')">+ Adicionar Projeto</button>
+                <button class="btn btn-sec" style="width:100%" onclick="addNewRepeaterItem('projects')">+ Adicionar Projeto</button>
             </div>
-         <!-- TAB: SKILLS & IDIOMAS -->
+
+            <!-- TAB: SKILLS & IDIOMAS -->
             <div id="tab-skills" class="tab-content">
                 <div class="section-header-toggle">
                     <h3>Habilidades</h3>
@@ -402,8 +396,7 @@
                 </div>
             </div>
         </aside>
-
-        <!-- PREVIEW PANEL -->
+       <!-- PREVIEW PANEL -->
         <main class="preview-panel">
             <div class="preview-sticky">
                 <div class="template-selector">
@@ -426,7 +419,7 @@
                     </div>
                 </div>
 
-                <!-- CV TARGET CANVAS -->
+                <!-- TARGET CANVAS -->
                 <div id="cv-target" class="cv-canvas tmpl-executivo">
                     <div class="cv-header" id="section-cv-header">
                         <img src="" id="cv-photo" class="cv-photo">
@@ -441,12 +434,13 @@
                         </div>
                     </div>
 
-                    <div class="cv-body-content">
+                    <div class="cv-body-content" id="cv-body-content-root">
                         <div class="cv-section" id="section-cv-about">
                             <h4 class="cv-section-title">Resumo Profissional</h4>
                             <p id="cv-about-text" class="cv-text-block">Descrição de perfil...</p>
                         </div>
 
+                        <!-- FLUXOS DE LAYOUT INTERNOS -->
                         <div id="cv-main-stream">
                             <div class="cv-section" id="section-cv-exp">
                                 <h4 class="cv-section-title">Experiência Profissional</h4>
@@ -482,7 +476,7 @@
     <script>
         let appState = {
             theme: 'light', template: 'tmpl-executivo', accent: '#2563eb',
-            visibilities: {}, experience: [], education: [], projects: []
+            visibilities: {}, experience: [], education: [], projects: [], photo: ""
         };
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -536,7 +530,8 @@
                 input.addEventListener('input', (e) => {
                     const targetId = e.target.getAttribute('data-target');
                     const container = document.getElementById(targetId);
-                    const pContainer = e.target.id === 'in-skills' ? document.getElementById('preview-tags-skills') : document.getElementById('preview-tags-lang');
+                    const isSkills = e.target.id === 'in-skills';
+                    const pContainer = isSkills ? document.getElementById('preview-tags-skills') : document.getElementById('preview-tags-lang');
                     
                     container.innerHTML = ''; pContainer.innerHTML = '';
                     if(!e.target.value.trim()) return;
@@ -582,21 +577,33 @@
             canvas.className = 'cv-canvas ' + tmplName;
             appState.template = tmplName; save();
 
-            const body = canvas.querySelector('.cv-body-content');
+            const body = document.getElementById('cv-body-content-root');
             const main = document.getElementById('cv-main-stream');
             const side = document.getElementById('cv-sidebar-stream');
+            const about = document.getElementById('section-cv-about');
+
+            // Remove wrappers antigos se existirem para evitar perda de nós do DOM
+            const oldSidebarWrapper = body.querySelector('.cv-sidebar-wrapper');
+            if(oldSidebarWrapper) {
+                body.innerHTML = '';
+                body.appendChild(about);
+                body.appendChild(main);
+                body.appendChild(side);
+            }
 
             if(tmplName === 'tmpl-criativo') {
-                if(!canvas.querySelector('.cv-sidebar')) {
-                    const sBlock = document.createElement('div'); sBlock.className = 'cv-sidebar';
-                    const mBlock = document.createElement('div'); mBlock.className = 'cv-mainbar';
-                    sBlock.appendChild(side); mBlock.appendChild(main);
-                    body.innerHTML = ''; body.appendChild(sBlock); body.appendChild(mBlock);
-                }
-            } else {
-                if(canvas.querySelector('.cv-sidebar')) {
-                    body.innerHTML = ''; body.appendChild(main); body.appendChild(side);
-                }
+                body.innerHTML = '';
+                const sideWrapper = document.createElement('div');
+                sideWrapper.className = 'cv-sidebar-wrapper';
+                sideWrapper.appendChild(side);
+                
+                const mainWrapper = document.createElement('div');
+                mainWrapper.className = 'cv-mainbar-wrapper';
+                mainWrapper.appendChild(about);
+                mainWrapper.appendChild(main);
+
+                body.appendChild(sideWrapper);
+                body.appendChild(mainWrapper);
             }
         }
 
@@ -611,7 +618,7 @@
             } else if(empty) { empty.remove(); }
         }
 
-        function createRepeater(type, data = null) {
+        function addNewRepeaterItem(type, data = null) {
             const container = document.getElementById(`repeater-${type}`);
             const id = data ? data.id : `${type}-${Date.now()}`;
             const item = document.createElement('div');
@@ -639,21 +646,28 @@
                 `;
             }
 
-            item.innerHTML = fields + `<div class="repeater-actions"><button class="btn btn-sec btn-danger" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="killRepeater('${type}','${id}')">Remover</button></div>`;
-            item.querySelectorAll('.rf').forEach(i => i.addEventListener('input', () => syncCanvas(type)));
+            item.innerHTML = fields + `<div class="repeater-actions"><button class="btn btn-sec btn-danger" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="killRepeaterItem('${type}','${id}')">Remover</button></div>`;
+          // Evento input dispara a sincronização imediata letra por letra
+            item.querySelectorAll('.rf').forEach(i => {
+                i.addEventListener('input', () => syncCanvasStream(type));
+            });
+
             container.appendChild(item);
             checkEmpty(type);
-            if(!data) syncCanvas(type);
+            syncCanvasStream(type);
         }
 
-        function killRepeater(type, id) {
+        function killRepeaterItem(type, id) {
             document.getElementById(id).remove();
-            checkEmpty(type); syncCanvas(type);
+            checkEmpty(type); 
+            syncCanvasStream(type);
         }
 
-        function syncCanvas(type) {
+        function syncCanvasStream(type) {
             const list = document.getElementById(`repeater-${type}`);
             const render = document.getElementById(`cv-render-${type}`);
+            if(!render) return;
+            
             render.innerHTML = '';
             let payload = [];
 
@@ -681,7 +695,7 @@
                 list.addEventListener('dragend', e => {
                     if(e.target.classList.contains('repeater-item')) {
                         e.target.classList.remove('dragging');
-                        syncCanvas(list.id.replace('repeater-', ''));
+                        syncCanvasStream(list.id.replace('repeater-', ''));
                     }
                 });
                 list.addEventListener('dragover', e => {
@@ -700,19 +714,15 @@
             document.getElementById(id).classList.add('active');
             e.currentTarget.classList.add('active');
         }
-      /* ==========================================================================
-           NOVO MOTOR DE EXPORTAÇÃO PIXEL-PERFECT (jspdf + html2canvas)
-           ========================================================================== */
+
         async function exportPixelPerfectPDF() {
-            showNotification("Magnificando e compilando PDF de alta fidelidade...");
+            showNotification("Compilando PDF de alta fidelidade...");
             const canvasElement = document.getElementById('cv-target');
             
-            // Força o estado A4 absoluto isolado em background
             canvasElement.classList.add('pdf-render-mode');
 
-            // Configurações de anti-aliasing avançado via html2canvas
             const options = {
-                scale: 3.0, // Multiplica a densidade de pixels por 3 (Resolução Ultra-HD)
+                scale: 3.0, 
                 useCORS: true,
                 logging: false,
                 allowTaint: true,
@@ -724,18 +734,17 @@
                 const imgData = canvas.toDataURL('image/jpeg', 1.0);
                 
                 const { jsPDF } = window.jspdf;
-                // Instancia o documento em formato A4 nativo estruturado
                 const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
                 
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = pdf.internal.pageSize.getHeight();
                 
                 pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
-                pdf.save('Curriculum_Vitae_Premium.pdf');
-                showNotification("Documento exportado com perfeição!");
+                pdf.save('Curriculum_Vitae_Enterprise.pdf');
+                showNotification("Documento exportado com sucesso!");
             } catch (error) {
                 console.error(error);
-                showNotification("Erro crítico na compilação do PDF.");
+                showNotification("Erro na geração do PDF.");
             } finally {
                 canvasElement.classList.remove('pdf-render-mode');
             }
@@ -752,11 +761,11 @@
                 skills: document.getElementById('in-skills').value,
                 lang: document.getElementById('in-lang').value
             };
-            localStorage.setItem('saas_ultimate_cv_v2', JSON.stringify(appState));
+            localStorage.setItem('saas_ultimate_cv_v3', JSON.stringify(appState));
         }
 
         function loadApplicationState() {
-            const data = localStorage.getItem('saas_ultimate_cv_v2');
+            const data = localStorage.getItem('saas_ultimate_cv_v3');
             if(data) {
                 try {
                     appState = JSON.parse(data);
@@ -776,34 +785,60 @@
                         document.getElementById('in-skills').value = appState.forms.skills || '';
                         document.getElementById('in-lang').value = appState.forms.lang || '';
                         
-                        document.querySelectorAll('.bind-val').forEach(i => i.dispatchEvent(new Event('input')));
-                        document.querySelectorAll('.tags-input').forEach(i => i.dispatchEvent(new Event('input')));
+                        // Atualiza binds textuais ordinários
+                        document.querySelectorAll('.bind-val').forEach(i => {
+                            const target = i.getAttribute('data-bind');
+                            const el = document.getElementById(target);
+                            if(el) el.innerText = i.value || '---';
+                        });
+
+                        // Atualiza tags
+                        document.querySelectorAll('.tags-input').forEach(i => {
+                            const targetId = i.getAttribute('data-target');
+                            const container = document.getElementById(targetId);
+                            const pContainer = i.id === 'in-skills' ? document.getElementById('preview-tags-skills') : document.getElementById('preview-tags-lang');
+                            if(container && i.value) {
+                                container.innerHTML = ''; pContainer.innerHTML = '';
+                                i.value.split(',').map(t => t.trim()).filter(Boolean).forEach(tag => {
+                                    const s1 = document.createElement('span'); s1.className = 'cv-tag'; s1.innerText = tag; container.appendChild(s1);
+                                    const s2 = document.createElement('span'); s2.className = 'visual-tag'; s2.innerText = tag; pContainer.appendChild(s2);
+                                });
+                            }
+                        });
                     }
                     if(appState.photo) {
                         const img = document.getElementById('cv-photo');
                         img.src = appState.photo; img.style.display = 'block';
                     }
+                    
+                    // Renderiza as coleções dinâmicas estruturadas antes de mapear visibilidade
+                    if(appState.experience) appState.experience.forEach(x => addNewRepeaterItem('experience', x));
+                    if(appState.education) appState.education.forEach(x => addNewRepeaterItem('education', x));
+                    if(appState.projects) appState.projects.forEach(x => addNewRepeaterItem('projects', x));
+                    
+                    ['experience', 'education', 'projects'].forEach(type => syncCanvasStream(type));
+
                     if(appState.visibilities) {
                         Object.keys(appState.visibilities).forEach(key => {
                             const sw = document.querySelector(`input[data-section="${key}"]`);
                             if(sw) { sw.checked = appState.visibilities[key]; toggleSection(sw); }
                         });
                     }
-                    if(appState.experience) appState.experience.forEach(x => createRepeater('experience', x));
-                    if(appState.education) appState.education.forEach(x => createRepeater('education', x));
-                    if(appState.projects) appState.projects.forEach(x => createRepeater('projects', x));
                     
-                    ['experience', 'education', 'projects'].forEach(type => syncCanvas(type));
-                    if(appState.template) { document.getElementById('template-select').value = appState.template; applyTemplate(appState.template); }
-                } catch(err) { console.error("Falha no parse do localState", err); }
+                    if(appState.template) { 
+                        document.getElementById('template-select').value = appState.template; 
+                        applyTemplate(appState.template); 
+                    }
+                } catch(err) { console.error("Erro na restauração de estado", err); }
             } else {
                 const d = document.querySelector('.color-dot'); if(d) d.classList.add('active');
+                checkEmpty('experience'); checkEmpty('education'); checkEmpty('projects');
             }
         }
 
         function clearData() {
             if(confirm("Limpar permanentemente todas as alterações rascunhadas?")) {
-                localStorage.removeItem('saas_ultimate_cv_v2'); window.location.reload();
+                localStorage.removeItem('saas_ultimate_cv_v3'); window.location.reload();
             }
         }
     </script>
