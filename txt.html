@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SaaS Premium CV Builder Enterprise</title>
+    <title>SaaS Premium CV Builder Ultimate Enterprise</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Iconografia e Motores de Renderização -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Motores Avançados de Renderização de PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
         :root {
-            /* Design System Tokens - Light Mode */
             --bg-main: #f8fafc;
             --bg-surface: #ffffff;
             --bg-surface-secondary: #f1f5f9;
             --text-main: #0f172a;
             --text-secondary: #334155;
             --text-muted: #64748b;
-            --accent: #2563eb; /* Dinâmico via JS */
+            --accent: #2563eb; 
             --accent-hover: #1d4ed8;
             --border-color: #e2e8f0;
             --radius-lg: 1rem;
@@ -29,13 +29,12 @@
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
             --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
-            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-bg: rgba(255, 255, 255, 0.85);
             --glass-border: rgba(226, 232, 240, 0.8);
-            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         [data-theme="dark"] {
-            /* Design System Tokens - Dark Mode */
             --bg-main: #020617;
             --bg-surface: #0b1329;
             --bg-surface-secondary: #1e293b;
@@ -46,12 +45,11 @@
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
             --shadow-md: 0 4px 12px -1px rgba(0, 0, 0, 0.4);
             --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-            --glass-bg: rgba(11, 19, 41, 0.8);
+            --glass-bg: rgba(11, 19, 41, 0.85);
             --glass-border: rgba(30, 41, 59, 0.6);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-main);
@@ -59,266 +57,179 @@
             min-height: 100vh;
             transition: background-color 0.3s ease, color 0.3s ease;
             overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
         }
 
-        /* --- LOADER --- */
-        #loader {
-            position: fixed; inset: 0; background: var(--bg-main);
-            z-index: 999999; display: flex; align-items: center; justify-content: center;
-            transition: opacity 0.4s ease;
-        }
-        .spinner {
-            width: 40px; height: 40px; border: 3px solid var(--border-color);
-            border-top-color: var(--accent); border-radius: 50%;
-            animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-        }
+        /* --- LOADER & TOASTS --- */
+        #loader { position: fixed; inset: 0; background: var(--bg-main); z-index: 999999; display: flex; align-items: center; justify-content: center; transition: opacity 0.3s ease; }
+        .spinner { width: 40px; height: 40px; border: 3px solid var(--border-color); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* --- TOAST NOTIFICATIONS --- */
         #toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 99999; display: flex; flex-direction: column; gap: 0.75rem; pointer-events: none; }
-        .toast {
-            background: var(--bg-surface); color: var(--text-main); padding: 1rem 1.5rem;
-            border-radius: var(--radius-md); box-shadow: var(--shadow-lg); border-left: 4px solid var(--accent);
-            transform: translateY(100px); opacity: 0; animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards, fadeOut 0.3s 3.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            font-weight: 600; font-size: 0.875rem; border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color);
-        }
-        @keyframes slideIn { to { transform: translateY(0); opacity: 1; } }
-        @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
+        .toast { background: var(--bg-surface); color: var(--text-main); padding: 1rem 1.5rem; border-radius: var(--radius-md); box-shadow: var(--shadow-lg); border-left: 4px solid var(--accent); animation: slideIn 0.3s forwards; font-weight: 600; font-size: 0.85rem; border-top: 1px solid var(--border-color); }
+        @keyframes slideIn { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* --- APPLICATION HEADER --- */
+        /* --- NAVBAR HEADER --- */
         header {
-            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100;
-            padding: 0.85rem 2rem; display: flex; justify-content: space-between; align-items: center;
-            box-shadow: var(--shadow-sm);
+            padding: 1rem 1.5rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;
         }
-        .logo-area h1 { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.5px; }
+        .logo-area h1 { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.5px; }
         .logo-area span { color: var(--accent); }
+        .header-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
 
-        .header-actions { display: flex; gap: 0.85rem; align-items: center; }
-        .btn {
-            background: var(--accent); color: white; border: none; padding: 0.65rem 1.25rem;
-            border-radius: var(--radius-md); font-weight: 600; cursor: pointer; transition: var(--transition);
-            display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; box-shadow: var(--shadow-sm);
-        }
-        .btn:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
-        .btn:active { transform: translateY(0); }
-        .btn-sec { background: var(--bg-surface-secondary); color: var(--text-main); box-shadow: none; }
-        .btn-sec:hover { background: var(--border-color); transform: none; box-shadow: none; }
+        /* CONTROLES DE DESIGN */
+        .color-picker-group { display: flex; gap: 0.35rem; align-items: center; background: var(--bg-surface-secondary); padding: 0.35rem; border-radius: 30px; }
+        .color-dot { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; transition: var(--transition); border: 2px solid transparent; }
+        .color-dot.active { border-color: var(--text-main); transform: scale(1.15); }
+        .theme-switch { background: var(--bg-surface-secondary); width: 42px; height: 22px; border-radius: 20px; cursor: pointer; position: relative; border: 1px solid var(--border-color); }
+        .theme-switch::before { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: var(--text-main); border-radius: 50%; transition: var(--transition); }
+        [data-theme="dark"] .theme-switch::before { transform: translateX(20px); background: var(--accent); }
+
+        /* BOTÕES MESTRES */
+        .btn { background: var(--accent); color: white; border: none; padding: 0.6rem 1.15rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+        .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn-sec { background: var(--bg-surface-secondary); color: var(--text-main); }
+        .btn-sec:hover { background: var(--border-color); }
         .btn-danger { background: #fee2e2; color: #ef4444; }
         .btn-danger:hover { background: #ef4444; color: white; }
 
-        /* Theme & Brand Controls */
-        .theme-switch {
-            background: var(--bg-surface-secondary); width: 44px; height: 24px; border-radius: 20px;
-            cursor: pointer; position: relative; border: 1px solid var(--border-color);
-        }
-        .theme-switch::before {
-            content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px;
-            background: var(--text-main); border-radius: 50%; transition: var(--transition);
-        }
-        [data-theme="dark"] .theme-switch::before { transform: translateX(20px); background: var(--accent); }
-
-        .color-picker-group { display: flex; gap: 0.35rem; align-items: center; margin-right: 0.5rem;}
-        .color-dot { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; transition: var(--transition); border: 2px solid transparent; }
-        .color-dot:hover { transform: scale(1.2); }
-        .color-dot.active { border-color: var(--text-main); transform: scale(1.1); }
-
-        .progress-container { width: 120px; background: var(--bg-surface-secondary); height: 6px; border-radius: 4px; overflow: hidden; }
-        .progress-bar { height: 100%; width: 0%; background: var(--accent); transition: var(--transition); }
-
-        /* --- CONTAINER PRINCIPAL ARCHITECTURE --- */
-        .app-container { display: grid; grid-template-columns: 1fr; min-height: calc(100vh - 65px); }
+        /* --- WORKSPACE ARCHITECTURE --- */
+        .app-container { display: grid; grid-template-columns: 1fr; min-height: calc(100vh - 70px); }
         @media (min-width: 1024px) { .app-container { grid-template-columns: 460px 1fr; } }
-        @media (min-width: 1400px) { .app-container { grid-template-columns: 520px 1fr; } }
+        @media (min-width: 1400px) { .app-container { grid-template-columns: 500px 1fr; } }
 
-        /* --- CONTROL PANEL (ESQUERDA) --- */
-        .control-panel {
-            padding: 1.5rem; border-right: 1px solid var(--border-color); background: var(--bg-surface);
-            max-height: calc(100vh - 65px); overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem;
-        }
-
-        .tabs-nav {
-            display: flex; gap: 0.25rem; background: var(--bg-surface-secondary);
-            padding: 0.3rem; border-radius: var(--radius-md); overflow-x: auto; position: sticky; top: 0; z-index: 10;
-        }
-        .tab-btn {
-            background: transparent; border: none; color: var(--text-muted); padding: 0.55rem 0.85rem;
-            border-radius: calc(var(--radius-md) - 2px); cursor: pointer; font-weight: 600; font-size: 0.8rem;
-            white-space: nowrap; flex: 1; transition: var(--transition);
-        }
-        .tab-btn:hover { color: var(--text-main); }
+        /* FORM PANEL (ESQUERDA) */
+        .control-panel { padding: 1.25rem; border-right: 1px solid var(--border-color); background: var(--bg-surface); max-height: calc(100vh - 70px); overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; }
+        .tabs-nav { display: flex; gap: 0.25rem; background: var(--bg-surface-secondary); padding: 0.25rem; border-radius: var(--radius-md); overflow-x: auto; position: sticky; top: 0; z-index: 20; }
+        .tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 0.5rem 0.75rem; border-radius: calc(var(--radius-md) - 2px); cursor: pointer; font-weight: 600; font-size: 0.8rem; flex: 1; white-space: nowrap; transition: var(--transition); }
         .tab-btn.active { background: var(--bg-surface); color: var(--text-main); box-shadow: var(--shadow-sm); }
-
         .tab-content { display: none; }
-        .tab-content.active { display: block; animation: tabFade 0.25s ease forwards; }
-        @keyframes tabFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        .tab-content.active { display: block; }
 
-        /* Global Structural Row Panels */
-        .section-header-toggle {
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--bg-main); padding: 0.85rem 1rem; border-radius: var(--radius-md);
-            border: 1px solid var(--border-color); margin-bottom: 1.25rem;
-        }
-        .section-title-wrapper h3 { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        /* Premium Switche Checkbox */
-        .switch-control { position: relative; display: inline-block; width: 38px; height: 20px; }
+        /* CONTROL ELEMENTS */
+        .section-header-toggle { display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 1rem; }
+        .section-header-toggle h3 { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .inline-toggle-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; }
+
+        /* PURE CSS PREMIUM SWITCH */
+        .switch-control { position: relative; display: inline-block; width: 36px; height: 20px; }
         .switch-control input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; inset: 0; background-color: var(--border-color); transition: .2s; border-radius: 20px; }
         .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .2s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--accent); }
-        input:checked + .slider:before { transform: translateX(18px); }
+        input:checked + .slider:before { transform: translateX(16px); }
 
-        /* Inputs e Elementos de Formulários */
-        .form-group { margin-bottom: 1.15rem; }
+        .form-group { margin-bottom: 1rem; }
         .form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; }
-        .form-control {
-            width: 100%; padding: 0.65rem 0.85rem; border-radius: var(--radius-md);
-            border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main);
-            font-family: inherit; font-size: 0.875rem; transition: var(--transition);
-        }
-        .form-control:focus { outline: none; border-color: var(--accent); background: var(--bg-surface); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12); }
-        .row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        textarea.form-control { resize: vertical; min-height: 70px; }
+        .form-control { width: 100%; padding: 0.6rem 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-family: inherit; font-size: 0.85rem; transition: var(--transition); }
+        .form-control:focus { outline: none; border-color: var(--accent); background: var(--bg-surface); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        textarea.form-control { resize: vertical; min-height: 65px; }
 
-        /* Repeater List Architecture */
-        .repeater-list { display: flex; flex-direction: column; gap: 0.85rem; margin-bottom: 1rem; }
-        .repeater-item {
-            background: var(--bg-main); border: 1px solid var(--border-color);
-            border-radius: var(--radius-md); padding: 1.15rem; position: relative;
-            transition: var(--transition); cursor: grab;
-        }
-        .repeater-item:active { cursor: grabbing; box-shadow: var(--shadow-md); }
-        .repeater-item::before {
-            content: '⋮⋮'; position: absolute; left: 6px; top: 50%; transform: translateY(-50%);
-            color: var(--text-muted); font-size: 0.85rem; opacity: 0.5;
-        }
-        .repeater-empty-state {
-            text-align: center; padding: 2rem 1rem; border: 1px dashed var(--border-color);
-            border-radius: var(--radius-md); color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;
-        }
-        .repeater-actions { display: flex; justify-content: flex-end; margin-top: 0.75rem; border-top: 1px dashed var(--border-color); padding-top: 0.65rem; }
+        /* REPEATER LISTS */
+        .repeater-list { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
+        .repeater-item { background: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; position: relative; cursor: grab; padding-left: 1.75rem; }
+        .repeater-item::before { content: '⋮⋮'; position: absolute; left: 6px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem; }
+        .repeater-empty-state { text-align: center; padding: 1.5rem 1rem; border: 1px dashed var(--border-color); border-radius: var(--radius-md); color: var(--text-muted); font-size: 0.8rem; }
+        .repeater-actions { display: flex; justify-content: flex-end; margin-top: 0.5rem; border-top: 1px dashed var(--border-color); padding-top: 0.5rem; }
+        .tags-output-container { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
+        .visual-tag { background: var(--accent); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
 
-        /* Tags de Habilidades Visuais */
-        .tags-output-container { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
-        .visual-tag { background: var(--accent); color: white; padding: 0.2rem 0.55rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
-
-        /* --- PREVIEW PANEL (DIREITA) --- */
-        .preview-panel {
-            background: #cbd5e1; padding: 2.5rem 1.5rem; display: flex; justify-content: center;
-            align-items: flex-start; overflow-y: auto; max-height: calc(100vh - 65px); scroll-behavior: smooth;
-        }
+        /* PREVIEW AREA (DIREITA) */
+        .preview-panel { background: #cbd5e1; padding: 1.5rem 1rem; display: flex; justify-content: center; align-items: flex-start; overflow-y: auto; max-height: calc(100vh - 70px); }
         [data-theme="dark"] .preview-panel { background: #020617; background-image: radial-gradient(var(--border-color) 1px, transparent 1px); background-size: 20px 20px; }
-        .preview-sticky { position: sticky; top: 0; width: 100%; max-width: 210mm; display: flex; flex-direction: column; gap: 1.25rem; }
+        .preview-sticky { position: sticky; top: 0; width: 100%; max-width: 210mm; display: flex; flex-direction: column; gap: 1rem; }
 
-        .template-selector {
-            background: var(--bg-surface); padding: 0.85rem 1.25rem; border-radius: var(--radius-md);
-            box-shadow: var(--shadow-md); border: 1px solid var(--border-color);
-            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-        }
-        .template-selector label { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; white-space: nowrap; }
+        .template-selector { background: var(--bg-surface); padding: 0.75rem 1rem; border-radius: var(--radius-md); box-shadow: var(--shadow-md); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+        .template-selector label { font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
         .select-wrapper { flex: 1; }
-        .select-wrapper select {
-            width: 100%; padding: 0.55rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);
-            background: var(--bg-main); color: var(--text-main); font-weight: 600; font-size: 0.85rem; outline: none;
-        }
-
-        /* --- THE CANVAS CORE (DOCUMENTO A4) --- */
-        .cv-canvas {
-            background: #ffffff; color: #1e293b; width: 100%; min-height: 297mm; padding: 20mm 18mm;
-            box-shadow: var(--shadow-lg); box-sizing: border-box; transition: all 0.2s ease; font-size: 13.5px; line-height: 1.5;
-        }
-
-        /* Classes Utilitárias Estruturais Internas */
-        .cv-section { margin-bottom: 1.4rem; }
-        .cv-section-title {
-            font-size: 1rem; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 0.2rem; margin-bottom: 0.65rem; letter-spacing: 0.5px; color: #0f172a;
-        }
-        .cv-header { margin-bottom: 1.5rem; display: flex; gap: 1.5rem; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1.25rem;}
-        .cv-photo { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; border: 2.5px solid #e2e8f0; display: none; }
-        .cv-name { font-size: 1.85rem; font-weight: 800; letter-spacing: -0.5px; color: #0f172a; line-height: 1.1; }
-        .cv-role { font-size: 0.95rem; font-weight: 600; color: var(--accent); margin-top: 0.15rem; }
-        .cv-meta { display: flex; flex-wrap: wrap; gap: 0.85rem; font-size: 0.8rem; color: #475569; margin-top: 0.4rem; }
-        .cv-grid-item { margin-bottom: 0.85rem; }
-        .cv-item-header { display: flex; justify-content: space-between; font-weight: 700; color: #0f172a; font-size: 0.9rem; }
-        .cv-item-sub { font-style: italic; color: #475569; font-size: 0.85rem; margin-bottom: 0.15rem; }
-        .cv-tags-list { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-        .cv-tag { background: #f1f5f9; color: #334155; padding: 0.15rem 0.45rem; border-radius: 3px; font-size: 0.75rem; font-weight: 500; }
-        .cv-text-block { white-space: pre-line; color: #334155; }
+        .select-wrapper select { width: 100%; padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 600; font-size: 0.8rem; outline: none; }
 
         /* ==========================================================================
-           8 PREMIUM ENGINE LAYOUT TEMPLATES
+           CANVAS ENGINE CORE (DOCUMENTO A4 RENDER)
            ========================================================================== */
-        
+        .cv-canvas {
+            background: #ffffff; color: #1e293b; width: 100%; min-height: 296mm; padding: 18mm 16mm;
+            box-shadow: var(--shadow-lg); box-sizing: border-box; font-size: 13px; line-height: 1.5;
+            position: relative; overflow: hidden;
+        }
+
+        /* Classes Utilitárias Internas */
+        .cv-section { margin-bottom: 1.25rem; }
+        .cv-section-title { font-size: 0.95rem; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.15rem; margin-bottom: 0.6rem; color: #0f172a; letter-spacing: 0.5px; }
+        .cv-header { margin-bottom: 1.25rem; display: flex; gap: 1.25rem; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; }
+        .cv-photo { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; display: none; }
+        .cv-name { font-size: 1.75rem; font-weight: 800; color: #0f172a; line-height: 1.1; letter-spacing: -0.5px; }
+        .cv-role { font-size: 0.9rem; font-weight: 600; color: var(--accent); margin-top: 0.15rem; }
+        .cv-meta { display: flex; flex-wrap: wrap; gap: 0.75rem; font-size: 0.75rem; color: #475569; margin-top: 0.35rem; }
+        .cv-grid-item { margin-bottom: 0.75rem; }
+        .cv-item-header { display: flex; justify-content: space-between; font-weight: 700; color: #0f172a; font-size: 0.85rem; }
+        .cv-item-sub { font-style: italic; color: #475569; font-size: 0.8rem; margin-bottom: 0.15rem; }
+        .cv-tags-list { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+        .cv-tag { background: #f1f5f9; color: #334155; padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.75rem; font-weight: 500; }
+        .cv-text-block { white-space: pre-line; color: #334155; font-size: 0.825rem; }
+
+        /* ==========================================================================
+           COMPLEMENTO DE TEMPLATES (1 ATÉ 12)
+           ========================================================================== */
         /* 1. EXECUTIVO */
         .cv-canvas.tmpl-executivo { font-family: 'Georgia', serif; }
         .cv-canvas.tmpl-executivo .cv-section-title { border-bottom-color: var(--accent); color: var(--accent); }
-        .cv-canvas.tmpl-executivo .cv-name { color: var(--accent); }
-
         /* 2. MINIMALISTA */
-        .cv-canvas.tmpl-minimalista { font-family: 'Plus Jakarta Sans', sans-serif; padding: 22mm; }
-        .cv-canvas.tmpl-minimalista .cv-section-title { border-bottom: none; font-weight: 600; letter-spacing: 1.5px; color: #000; position:relative; }
-        .cv-canvas.tmpl-minimalista .cv-section-title::after { content: ''; position: absolute; bottom: 0; left: 0; width: 25px; height: 1.5px; background: #000; }
-
-        /* 3. CRIATIVO (Duas Colunas Assimétricas) */
-        .cv-canvas.tmpl-criativo { display: grid; grid-template-columns: 1fr 1.8fr; gap: 1.5rem; padding: 0; }
-        .cv-canvas.tmpl-criativo .cv-sidebar { background: #f8fafc; padding: 15mm 8mm; border-right: 1px solid #e2e8f0; height: 100%; }
-        .cv-canvas.tmpl-criativo .cv-mainbar { padding: 15mm 12mm 15mm 4mm; }
-        .cv-canvas.tmpl-criativo .cv-header { grid-column: span 2; padding: 15mm 12mm 0 12mm; margin: 0; border: none; }
-        .cv-canvas.tmpl-criativo .cv-section-title { border-bottom-color: var(--accent); color: var(--accent); }
-
-        /* 4. CORPORATIVO */
+        .cv-canvas.tmpl-minimalista { padding: 20mm; }
+        .cv-canvas.tmpl-minimalista .cv-section-title { border-bottom: none; font-weight: 600; position:relative; }
+        .cv-canvas.tmpl-minimalista .cv-section-title::after { content: ''; position: absolute; bottom: 0; left: 0; width: 20px; height: 2px; background: #000; }
+        /* 3. CRIATIVO ASYMMETRIC */
+        .cv-canvas.tmpl-criativo { display: grid; grid-template-columns: 1fr 1.8fr; gap: 1.25rem; padding: 0; }
+        .cv-canvas.tmpl-criativo .cv-sidebar { background: #f8fafc; padding: 12mm 6mm; border-right: 1px solid #e2e8f0; }
+        .cv-canvas.tmpl-criativo .cv-mainbar { padding: 12mm 10mm 12mm 2mm; }
+        .cv-canvas.tmpl-criativo .cv-header { grid-column: span 2; padding: 12mm 10mm 0 10mm; margin: 0; border: none; }
+        /* 4. CORPORATIVO SOLID */
         .cv-canvas.tmpl-corporativo { padding: 0; }
-        .cv-canvas.tmpl-corporativo .cv-header { background: #0f172a; color: white; padding: 15mm 18mm; margin-bottom: 1.5rem; border: none; }
+        .cv-canvas.tmpl-corporativo .cv-header { background: #0f172a; color: white; padding: 12mm 16mm; margin-bottom: 1.25rem; border: none; }
         .cv-canvas.tmpl-corporativo .cv-header .cv-name { color: white; }
         .cv-canvas.tmpl-corporativo .cv-header .cv-meta { color: #94a3b8; }
-        .cv-canvas.tmpl-corporativo .cv-body-content { padding: 0 18mm 18mm 18mm; }
-        .cv-canvas.tmpl-corporativo .cv-section-title { border-bottom: 2px solid #0f172a; }
-
-        /* 5. ESCURO PREMIUM */
+        .cv-canvas.tmpl-corporativo .cv-body-content { padding: 0 16mm 16mm 16mm; }
+        /* 5. ESCURO LUXURY */
         .cv-canvas.tmpl-escuro-premium { background: #0f172a; color: #f8fafc; }
         .cv-canvas.tmpl-escuro-premium .cv-name, .cv-canvas.tmpl-escuro-premium .cv-item-header { color: #ffffff; }
         .cv-canvas.tmpl-escuro-premium .cv-meta, .cv-canvas.tmpl-escuro-premium .cv-item-sub, .cv-canvas.tmpl-escuro-premium .cv-text-block { color: #cbd5e1; }
         .cv-canvas.tmpl-escuro-premium .cv-section-title { border-bottom-color: var(--accent); color: var(--accent); }
         .cv-canvas.tmpl-escuro-premium .cv-tag { background: #1e293b; color: #f8fafc; }
-
         /* 6. MODERNO BOLD */
-        .cv-canvas.tmpl-moderno-bold .cv-section-title { background: #0f172a; color: white; padding: 0.35rem 0.6rem; border-bottom: none; }
-        [data-theme="dark"] .cv-canvas.tmpl-moderno-bold .cv-section-title { background: var(--accent); }
-
+        .cv-canvas.tmpl-moderno-bold .cv-section-title { background: #0f172a; color: white; padding: 0.3rem 0.5rem; border-bottom: none; }
         /* 7. ELEGANTE LINEAR */
         .cv-canvas.tmpl-elegante-linear .cv-header { display: flex; flex-direction: column; text-align: center; border-bottom: 1px dashed #cbd5e1; }
         .cv-canvas.tmpl-elegante-linear .cv-meta { justify-content: center; }
-        .cv-canvas.tmpl-elegante-linear .cv-section-title { border-bottom: 1px dashed #64748b; text-align: center; }
-
-        /* 8. TÉCNICO ATS */
-        .cv-canvas.tmpl-tecnico-ats { font-family: 'Courier New', Courier, monospace; color: #000; font-size: 12.5px; }
-        .cv-canvas.tmpl-tecnico-ats .cv-section-title { border-bottom: 1px solid #000; color: #000; font-weight: bold; }
-        .cv-canvas.tmpl-tecnico-ats .cv-item-header, .cv-canvas.tmpl-tecnico-ats .cv-name { color: #000; }
-        .cv-canvas.tmpl-tecnico-ats .cv-tag { background: transparent; padding: 0; border-radius: 0; }
+        /* 8. TECNICO ATS */
+        .cv-canvas.tmpl-tecnico-ats { font-family: 'Courier New', monospace; color: #000; }
+        .cv-canvas.tmpl-tecnico-ats .cv-section-title { border-bottom: 1px solid #000; color: #000; }
         .cv-canvas.tmpl-tecnico-ats .cv-tag::after { content: ', '; }
         .cv-canvas.tmpl-tecnico-ats .cv-tag:last-child::after { content: ''; }
+        
+        /* NEW: 9. MINIMALISTA DARK MATRIX */
+        .cv-canvas.tmpl-dark-matrix { background: #070a13; color: #a1a1aa; font-family: monospace; }
+        .cv-canvas.tmpl-dark-matrix .cv-name { color: #f4f4f5; }
+        .cv-canvas.tmpl-dark-matrix .cv-section-title { border-bottom: 1px solid var(--accent); color: var(--accent); }
+        .cv-canvas.tmpl-dark-matrix .cv-item-header { color: #e4e4e7; }
 
-        /* ==========================================================================
-           MOTOR 1 & MOTOR 2 PDF CONFIGS
-           ========================================================================== */
-                .forced-pdf-print {
-            width: 210mm !important; min-height: 297mm !important; padding: 15mm !important;
-            position: fixed !important; top: 0 !important; left: 0 !important; z-index: 99999 !important;
-            background: white !important; color: black !important; box-shadow: none !important; transform: none !important;
-        }
+        /* NEW: 10. EXECUTIVE LEFT BORDER */
+        .cv-canvas.tmpl-left-border { border-left: 8mm solid var(--accent); }
+        .cv-canvas.tmpl-left-border .cv-section-title { color: var(--accent); border-bottom-color: var(--accent); }
 
-        @media print {
-            body, html { background: white !important; color: black !important; }
-            header, .control-panel, .template-selector, #toast-container, #loader { display: none !important; }
-            .app-container { display: block !important; }
-            .preview-panel { padding: 0 !important; background: white !important; display: block !important; overflow: visible !important; max-height: none !important;}
-            .preview-sticky { max-width: 100% !important; position: static !important; }
-            .cv-canvas { box-shadow: none !important; padding: 10mm !important; width: 100% !important; min-height: auto !important; display: block !important; }
-        }
+        /* NEW: 11. ACADEMIC CHRONOS */
+        .cv-canvas.tmpl-academic { font-family: 'Times New Roman', Times, serif; }
+        .cv-canvas.tmpl-academic .cv-section-title { border-bottom: 1px solid #000; text-align: left; font-size: 1.1rem; }
+        .cv-canvas.tmpl-academic .cv-name { font-size: 2rem; text-align: center; display: block; width: 100%; }
+        .cv-canvas.tmpl-academic .cv-header { flex-direction: column; text-align: center; }
+        .cv-canvas.tmpl-academic .cv-meta { justify-content: center; }
+
+        /* NEW: 12. CREATIVE NEO-GLOW */
+        .cv-canvas.tmpl-neo-glow .cv-section { background: #fafafa; padding: 1rem; border-radius: 6px; border-left: 4px solid var(--accent); }
+        .cv-canvas.tmpl-neo-glow .cv-section-title { border: none; color: var(--text-main); }
+
+        /* PIPELINE DE CONVERSÃO DE PDF CONTROLADA */
+        .pdf-render-mode { width: 210mm !important; min-height: 297mm !important; max-width: 210mm !important; position: absolute !important; left: 0 !important; top: 0 !important; z-index: -99999 !important; background: #ffffff !important; transform: none !important; }
     </style>
 </head>
 <body data-theme="light">
@@ -326,159 +237,168 @@
     <div id="loader"><div class="spinner"></div></div>
     <div id="toast-container"></div>
 
-    <!-- MAIN HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SaaS Builder <span>Enterprise</span></h1>
+            <h1>SaaS Builder <span>Ultimate</span></h1>
         </div>
         <div class="header-actions">
-            <!-- Dynamic Brand Accent Selection -->
             <div class="color-picker-group">
-                <div class="color-dot" style="background:#2563eb;" onclick="setBrandAccent('#2563eb', this)" title="Blue Royal"></div>
-                <div class="color-dot" style="background:#059669;" onclick="setBrandAccent('#059669', this)" title="Emerald"></div>
-                <div class="color-dot" style="background:#7c3aed;" onclick="setBrandAccent('#7c3aed', this)" title="Purple Indie"></div>
-                <div class="color-dot" style="background:#d97706;" onclick="setBrandAccent('#d97706', this)" title="Amber Tech"></div>
-                <div class="color-dot" style="background:#db2777;" onclick="setBrandAccent('#db2777', this)" title="Rose Elite"></div>
+                <div class="color-dot" style="background:#2563eb;" onclick="setBrandAccent('#2563eb', this)"></div>
+                <div class="color-dot" style="background:#059669;" onclick="setBrandAccent('#059669', this)"></div>
+                <div class="color-dot" style="background:#7c3aed;" onclick="setBrandAccent('#7c3aed', this)"></div>
+                <div class="color-dot" style="background:#ea580c;" onclick="setBrandAccent('#ea580c', this)"></div>
+                <div class="color-dot" style="background:#db2777;" onclick="setBrandAccent('#db2777', this)"></div>
             </div>
-            
-            <div class="progress-container" title="Completude do CV">
-                <div class="progress-bar" id="cv-progress"></div>
-            </div>
-            
-            <div class="theme-switch" id="theme-toggle" title="Alternar Tema"></div>
+            <div class="theme-switch" id="theme-toggle"></div>
             <button class="btn btn-sec btn-danger" onclick="clearData()">Resetar</button>
-            <button class="btn btn-sec" onclick="triggerNativePrint()">Imprimir (M2)</button>
-            <button class="btn" onclick="generateCanvasPDF()">Exportar PDF Premium (M1)</button>
+            <button class="btn" onclick="exportPixelPerfectPDF()">Exportar PDF Magnificado (M1)</button>
         </div>
     </header>
 
-    <!-- WORKSPACE APPLICATION -->
     <div class="app-container">
-        
         <!-- CONTROL PANEL -->
-        <aside class="control-panel">
+               <aside class="control-panel">
             <nav class="tabs-nav">
-                <button class="tab-btn active" onclick="switchTab(event, 'tab-dados')">Perfil</button>
+                <button class="tab-btn active" onclick="switchTab(event, 'tab-dados')">Dados</button>
                 <button class="tab-btn" onclick="switchTab(event, 'tab-experiencia')">Carreira</button>
-                <button class="tab-btn" onclick="switchTab(event, 'tab-educacao')">Formação</button>
+                <button class="tab-btn" onclick="switchTab(event, 'tab-educacao')">Educação</button>
                 <button class="tab-btn" onclick="switchTab(event, 'tab-projetos')">Projetos</button>
-                <button class="tab-btn" onclick="switchTab(event, 'tab-skills')">Competências</button>
+                <button class="tab-btn" onclick="switchTab(event, 'tab-skills')">Skills</button>
             </nav>
 
-            <!-- TAB: PERFIL & DADOS -->
+            <!-- TAB: DADOS E CONFIGURAÇÕES DE VISIBILIDADE -->
             <div id="tab-dados" class="tab-content active">
                 <div class="section-header-toggle">
-                    <div class="section-title-wrapper"><h3>Cabeçalho de Identidade</h3></div>
+                    <h3>Cabeçalho Principal</h3>
                     <label class="switch-control">
-                        <input type="checkbox" id="toggle-header" data-section="section-cv-header" checked onchange="toggleSectionVisibility(this)">
+                        <input type="checkbox" id="tg-header" data-section="section-cv-header" checked onchange="toggleSection(this)">
                         <span class="slider"></span>
                     </label>
-                </div>
-                
-                <div class="form-group">
-                    <label>Fotografia Profissional</label>
-                    <input type="file" class="form-control" id="in-photo" accept="image/*" onchange="processProfilePhoto(this)">
-                </div>
-                <div class="form-group">
-                    <label>Nome Completo</label>
-                    <input type="text" class="form-control bind-val" data-bind="cv-name" id="in-name" placeholder="Ex: Claudio Armando">
-                </div>
-                <div class="form-group">
-                    <label>Título Profissional / Cargo</label>
-                    <input type="text" class="form-control bind-val" data-bind="cv-role" id="in-role" placeholder="Ex: Desenvolvedor Front-end Senior">
-                </div>
-                <div class="row-grid">
-                    <div class="form-group">
-                        <label>E-mail Corporativo</label>
-                        <input type="email" class="form-control bind-val" data-bind="cv-email" id="in-email" placeholder="exemplo@dominio.com">
-                    </div>
-                    <div class="form-group">
-                        <label>Contacto Telefónico</label>
-                        <input type="text" class="form-control bind-val" data-bind="cv-phone" id="in-phone" placeholder="+258 ...">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Localização / Endereço</label>
-                    <input type="text" class="form-control bind-val" data-bind="cv-location" id="in-location" placeholder="Ex: Beira, Moçambique">
                 </div>
 
-                <div class="section-header-toggle" style="margin-top:2rem;">
-                    <div class="section-title-wrapper"><h3>Perfil Profissional / Resumo</h3></div>
+                <div class="form-group">
+                    <div class="inline-toggle-row">
+                        <label>Foto de Perfil</label>
+                        <label class="switch-control"><input type="checkbox" id="tg-photo" data-section="cv-photo" checked onchange="toggleSection(this)"><span class="slider"></span></label>
+                    </div>
+                    <input type="file" class="form-control" id="in-photo" accept="image/*" onchange="uploadPhoto(this)">
+                </div>
+
+                <div class="form-group">
+                    <div class="inline-toggle-row">
+                        <label>Nome do Candidato</label>
+                        <label class="switch-control"><input type="checkbox" id="tg-name" data-section="cv-name" checked onchange="toggleSection(this)"><span class="slider"></span></label>
+                    </div>
+                    <input type="text" class="form-control bind-val" data-bind="cv-name" id="in-name" placeholder="Ex: Claudio Armando">
+                </div>
+
+                <div class="form-group">
+                    <div class="inline-toggle-row">
+                        <label>Cargo / Título Executivo</label>
+                        <label class="switch-control"><input type="checkbox" id="tg-role" data-section="cv-role" checked onchange="toggleSection(this)"><span class="slider"></span></label>
+                    </div>
+                    <input type="text" class="form-control bind-val" data-bind="cv-role" id="in-role" placeholder="Ex: Desenvolvedor Front-end Senior">
+                </div>
+
+                <div class="row-grid">
+                    <div class="form-group">
+                        <div class="inline-toggle-row">
+                            <label>E-mail</label>
+                            <label class="switch-control"><input type="checkbox" id="tg-email" data-section="cv-email" checked onchange="toggleSection(this)"><span class="slider"></span></label>
+                        </div>
+                        <input type="email" class="form-control bind-val" data-bind="cv-email" id="in-email">
+                    </div>
+                    <div class="form-group">
+                        <div class="inline-toggle-row">
+                            <label>Telefone</label>
+                            <label class="switch-control"><input type="checkbox" id="tg-phone" data-section="cv-phone" checked onchange="toggleSection(this)"><span class="slider"></span></label>
+                        </div>
+                        <input type="text" class="form-control bind-val" data-bind="cv-phone" id="in-phone">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="inline-toggle-row">
+                        <label>Localização</label>
+                        <label class="switch-control"><input type="checkbox" id="tg-location" data-section="cv-location" checked onchange="toggleSection(this)"><span class="slider"></span></label>
+                    </div>
+                    <input type="text" class="form-control bind-val" data-bind="cv-location" id="in-location">
+                </div>
+
+                <div class="section-header-toggle" style="margin-top:1.5rem;">
+                    <h3>Sobre Mim / Sumário</h3>
                     <label class="switch-control">
-                        <input type="checkbox" id="toggle-about" data-section="section-cv-about" checked onchange="toggleSectionVisibility(this)">
+                        <input type="checkbox" id="tg-about" data-section="section-cv-about" checked onchange="toggleSection(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="form-group">
-                    <label>Sumário Executivo</label>
-                    <textarea class="form-control bind-val" data-bind="cv-about-text" id="in-about" rows="4" placeholder="Escreva uma introdução focada nas suas principais competências e valor entregue nas empresas..."></textarea>
+                    <textarea class="form-control bind-val" data-bind="cv-about-text" id="in-about" rows="3"></textarea>
                 </div>
             </div>
 
-            <!-- TAB: EXPERIÊNCIA -->
+            <!-- TAB: EXPERIÊNCIA REPEATER -->
             <div id="tab-experiencia" class="tab-content">
                 <div class="section-header-toggle">
-                    <div class="section-title-wrapper"><h3>Experiência Profissional</h3></div>
+                    <h3>Experiência Profissional</h3>
                     <label class="switch-control">
-                        <input type="checkbox" id="toggle-exp" data-section="section-cv-exp" checked onchange="toggleSectionVisibility(this)">
+                        <input type="checkbox" id="tg-exp" data-section="section-cv-exp" checked onchange="toggleSection(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div id="repeater-experience" class="repeater-list"></div>
-                <button class="btn btn-sec" style="width:100%" onclick="addRepeaterItem('experience')">+ Adicionar Registo de Carreira</button>
+                <button class="btn btn-sec" style="width:100%" onclick="createRepeater('experience')">+ Adicionar Experiência</button>
             </div>
 
-            <!-- TAB: FORMACÃO -->
+            <!-- TAB: EDUCAÇÃO REPEATER -->
             <div id="tab-educacao" class="tab-content">
                 <div class="section-header-toggle">
-                    <div class="section-title-wrapper"><h3>Histórico Académico</h3></div>
+                    <h3>Formação Académica</h3>
                     <label class="switch-control">
-                        <input type="checkbox" id="toggle-edu" data-section="section-cv-edu" checked onchange="toggleSectionVisibility(this)">
+                        <input type="checkbox" id="tg-edu" data-section="section-cv-edu" checked onchange="toggleSection(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div id="repeater-education" class="repeater-list"></div>
-                <button class="btn btn-sec" style="width:100%" onclick="addRepeaterItem('education')">+ Adicionar Formação Académica</button>
+                <button class="btn btn-sec" style="width:100%" onclick="createRepeater('education')">+ Adicionar Educação</button>
             </div>
-                   <!-- TAB: PROJETOS -->
+
+            <!-- TAB: PROJETOS REPEATER -->
             <div id="tab-projetos" class="tab-content">
                 <div class="section-header-toggle">
-                    <div class="section-title-wrapper"><h3>Projetos e Portfólio</h3></div>
+                    <h3>Projetos Realizados</h3>
                     <label class="switch-control">
-                        <input type="checkbox" id="toggle-proj" data-section="section-cv-proj" checked onchange="toggleSectionVisibility(this)">
+                        <input type="checkbox" id="tg-proj" data-section="section-cv-proj" checked onchange="toggleSection(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div id="repeater-projects" class="repeater-list"></div>
-                <button class="btn btn-sec" style="width:100%" onclick="addRepeaterItem('projects')">+ Adicionar Registro de Projeto</button>
+                <button class="btn btn-sec" style="width:100%" onclick="createRepeater('projects')">+ Adicionar Projeto</button>
             </div>
-
-            <!-- TAB: EXTRA & COMPETÊNCIAS -->
+         <!-- TAB: SKILLS & IDIOMAS -->
             <div id="tab-skills" class="tab-content">
                 <div class="section-header-toggle">
-                    <div class="section-title-wrapper"><h3>Hard / Soft Skills</h3></div>
+                    <h3>Habilidades</h3>
                     <label class="switch-control">
-                        <input type="checkbox" id="toggle-skills" data-section="section-cv-skills" checked onchange="toggleSectionVisibility(this)">
+                        <input type="checkbox" id="tg-skills" data-section="section-cv-skills" checked onchange="toggleSection(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="form-group">
-                    <label>Habilidades (Separadas por vírgula)</label>
-                    <input type="text" class="form-control tags-input" data-target="cv-skills-list" id="in-skills" placeholder="JavaScript, React, UI Design, CI/CD">
-                    <div class="tags-output-container" id="tags-skills-preview"></div>
+                    <input type="text" class="form-control tags-input" data-target="cv-skills-list" id="in-skills" placeholder="Separe por vírgulas">
+                    <div class="tags-output-container" id="preview-tags-skills"></div>
                 </div>
 
-                <div class="section-header-toggle" style="margin-top: 2rem;">
-                    <div class="section-title-wrapper"><h3>Proficiência em Idiomas</h3></div>
+                <div class="section-header-toggle" style="margin-top:1.5rem;">
+                    <h3>Idiomas</h3>
                     <label class="switch-control">
-                        <input type="checkbox" id="toggle-lang" data-section="section-cv-lang" checked onchange="toggleSectionVisibility(this)">
+                        <input type="checkbox" id="tg-lang" data-section="section-cv-lang" checked onchange="toggleSection(this)">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="form-group">
-                    <label>Idiomas (Separados por vírgula)</label>
-                    <input type="text" class="form-control tags-input" data-target="cv-lang-list" id="in-languages" placeholder="Português (Nativo), Inglês (Fluente)">
-                    <div class="tags-output-container" id="tags-lang-preview"></div>
+                    <input type="text" class="form-control tags-input" data-target="cv-lang-list" id="in-lang" placeholder="Separe por vírgulas">
+                    <div class="tags-output-container" id="preview-tags-lang"></div>
                 </div>
             </div>
         </aside>
@@ -486,43 +406,45 @@
         <!-- PREVIEW PANEL -->
         <main class="preview-panel">
             <div class="preview-sticky">
-                
                 <div class="template-selector">
-                    <label for="template-select">Layout Engine</label>
+                    <label>Layout Engine Core</label>
                     <div class="select-wrapper">
-                        <select id="template-select" onchange="changeCVTemplate(this.value)">
+                        <select id="template-select" onchange="applyTemplate(this.value)">
                             <option value="tmpl-executivo">1. Modelo Executivo (Corporate Alpha)</option>
                             <option value="tmpl-minimalista">2. Modelo Minimalista (Clean Space)</option>
                             <option value="tmpl-criativo">3. Modelo Criativo (Assimétrico Splitted)</option>
-                            <option value="tmpl-corporativo">4. Modelo Corporativo (Solid Top Header)</option>
+                            <option value="tmpl-corporativo">4. Modelo Corporativo (Solid Header)</option>
                             <option value="tmpl-escuro-premium">5. Modelo Escuro Premium (Luxury Midnight)</option>
-                            <option value="tmpl-moderno-bold">6. Modelo Moderno Bold (Structured Blocks)</option>
-                            <option value="tmpl-elegante-linear">7. Modelo Elegante Linear (Soft Centered)</option>
-                            <option value="tmpl-tecnico-ats">8. Modelo Técnico ATS (Sistemas de Rastreamento)</option>
+                            <option value="tmpl-moderno-bold">6. Modelo Moderno Bold (Structured)</option>
+                            <option value="tmpl-elegante-linear">7. Modelo Elegante Linear (Centered)</option>
+                            <option value="tmpl-tecnico-ats">8. Modelo Técnico ATS (Parsing Optimized)</option>
+                            <option value="tmpl-dark-matrix">9. Minimalista Dark Matrix (Tech Synth)</option>
+                            <option value="tmpl-left-border">10. Executive Left Border (Solid Accent)</option>
+                            <option value="tmpl-academic">11. Academic Chronos (Curriculum Vitae)</option>
+                            <option value="tmpl-neo-glow">12. Creative Neo-Glow (Modern Accented)</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- CANVAS DE PRE-VISUALIZACÃO -->
+                <!-- CV TARGET CANVAS -->
                 <div id="cv-target" class="cv-canvas tmpl-executivo">
-                    
                     <div class="cv-header" id="section-cv-header">
-                        <img src="" id="cv-photo" class="cv-photo" alt="Profile">
+                        <img src="" id="cv-photo" class="cv-photo">
                         <div style="flex:1;">
                             <h2 class="cv-name" id="cv-name">Seu Nome Completo</h2>
-                            <p class="cv-role" id="cv-role">Seu Cargo Profissional</p>
+                            <p class="cv-role" id="cv-role">Título Profissional</p>
                             <div class="cv-meta">
-                                <span id="cv-email">email@exemplo.com</span>
+                                <span id="cv-email">email@dominio.com</span>
                                 <span id="cv-phone">+258 840000000</span>
-                                <span id="cv-location">Sua Cidade, Moçambique</span>
+                                <span id="cv-location">Moçambique</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="cv-body-content">
                         <div class="cv-section" id="section-cv-about">
-                            <h4 class="cv-section-title">Sobre Mim</h4>
-                            <p id="cv-about-text" class="cv-text-block">Breve sumário executivo da sua carreira profissional...</p>
+                            <h4 class="cv-section-title">Resumo Profissional</h4>
+                            <p id="cv-about-text" class="cv-text-block">Descrição de perfil...</p>
                         </div>
 
                         <div id="cv-main-stream">
@@ -530,14 +452,12 @@
                                 <h4 class="cv-section-title">Experiência Profissional</h4>
                                 <div id="cv-render-experience"></div>
                             </div>
-
                             <div class="cv-section" id="section-cv-edu">
                                 <h4 class="cv-section-title">Formação Acadêmica</h4>
                                 <div id="cv-render-education"></div>
                             </div>
-
                             <div class="cv-section" id="section-cv-proj">
-                                <h4 class="cv-section-title">Projetos Realizados</h4>
+                                <h4 class="cv-section-title">Projetos</h4>
                                 <div id="cv-render-projects"></div>
                             </div>
                         </div>
@@ -547,374 +467,282 @@
                                 <h4 class="cv-section-title">Habilidades</h4>
                                 <div class="cv-tags-list" id="cv-skills-list"></div>
                             </div>
-
                             <div class="cv-section" id="section-cv-lang">
                                 <h4 class="cv-section-title">Idiomas</h4>
                                 <div class="cv-tags-list" id="cv-lang-list"></div>
                             </div>
                         </div>
                     </div>
-
                 </div>
 
             </div>
         </main>
     </div>
 
-    <!-- CORE LOGIC CORE ARCHITECTURE JS -->
     <script>
-        let store = {
-            theme: 'light',
-            template: 'tmpl-executivo',
-            accent: '#2563eb',
-            visibilities: {},
-            experience: [],
-            education: [],
-            projects: []
+        let appState = {
+            theme: 'light', template: 'tmpl-executivo', accent: '#2563eb',
+            visibilities: {}, experience: [], education: [], projects: []
         };
 
         document.addEventListener("DOMContentLoaded", () => {
-            initTheme();
-            loadState();
-            setupDataBinding();
-            setupDragAndDrop();
-            checkEmptyStates();
+            initSystem();
+            loadApplicationState();
+            setupInteractions();
+            setupDragDropEngine();
             
             setTimeout(() => {
                 const loader = document.getElementById('loader');
                 loader.style.opacity = 0;
-                setTimeout(() => loader.style.display = 'none', 400);
-            }, 300);
+                setTimeout(() => loader.style.display = 'none', 300);
+            }, 400);
         });
 
-        function showToast(message) {
+        function showNotification(msg) {
             const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerText = message;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3500);
+            const item = document.createElement('div');
+            item.className = 'toast'; item.innerText = msg;
+            container.appendChild(item);
+            setTimeout(() => item.remove(), 3000);
         }
 
-        function initTheme() {
-            const toggle = document.getElementById('theme-toggle');
-            toggle.addEventListener('click', () => {
-                const currentTheme = document.body.getAttribute('data-theme');
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                document.body.setAttribute('data-theme', newTheme);
-                store.theme = newTheme;
-                saveState();
+        function initSystem() {
+            document.getElementById('theme-toggle').addEventListener('click', () => {
+                const isDark = document.body.getAttribute('data-theme') === 'dark';
+                const next = isDark ? 'light' : 'dark';
+                document.body.setAttribute('data-theme', next);
+                appState.theme = next; save();
             });
         }
 
-        function setBrandAccent(color, element) {
+        function setBrandAccent(color, el) {
             document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
-            if(element) element.classList.add('active');
-            
+            if(el) el.classList.add('active');
             document.documentElement.style.setProperty('--accent', color);
-            // Calcula cor de hover sutil
-            store.accent = color;
-            saveState();
+            appState.accent = color; save();
         }
 
-        function setupDataBinding() {
+        function setupInteractions() {
             document.querySelectorAll('.bind-val').forEach(input => {
                 input.addEventListener('input', (e) => {
-                    const targetId = e.target.getAttribute('data-bind');
-                    const el = document.getElementById(targetId);
-                    if (el) {
-                        el.innerText = e.target.value || getPlaceholderFallback(targetId);
-                    }
-                    saveState();
-                    calculateProgress();
+                    const target = e.target.getAttribute('data-bind');
+                    const element = document.getElementById(target);
+                    if(element) element.innerText = e.target.value || '---';
+                    save();
                 });
             });
 
             document.querySelectorAll('.tags-input').forEach(input => {
                 input.addEventListener('input', (e) => {
-                    renderTags(e.target);
-                    saveState();
-                    calculateProgress();
+                    const targetId = e.target.getAttribute('data-target');
+                    const container = document.getElementById(targetId);
+                    const pContainer = e.target.id === 'in-skills' ? document.getElementById('preview-tags-skills') : document.getElementById('preview-tags-lang');
+                    
+                    container.innerHTML = ''; pContainer.innerHTML = '';
+                    if(!e.target.value.trim()) return;
+
+                    e.target.value.split(',').map(t => t.trim()).filter(Boolean).forEach(tag => {
+                        const s1 = document.createElement('span'); s1.className = 'cv-tag'; s1.innerText = tag; container.appendChild(s1);
+                        const s2 = document.createElement('span'); s2.className = 'visual-tag'; s2.innerText = tag; pContainer.appendChild(s2);
+                    });
+                    save();
                 });
             });
         }
 
-        function getPlaceholderFallback(id) {
-            const fallbacks = {
-                'cv-name': 'Seu Nome Completo',
-                'cv-role': 'Seu Cargo Profissional',
-                'cv-email': 'email@exemplo.com',
-                'cv-phone': '+258 840000000',
-                'cv-location': 'Sua Cidade, Moçambique',
-                'cv-about-text': 'Breve sumário executivo da sua carreira profissional...'
-            };
-            return fallbacks[id] || '';
+        function uploadPhoto(input) {
+            if(input.files && input.files[0]) {
+                const r = new FileReader();
+                r.onload = function(e) {
+                    const img = document.getElementById('cv-photo');
+                    img.src = e.target.result;
+                    if(document.getElementById('tg-photo').checked) img.style.display = 'block';
+                    appState.photo = e.target.result; save();
+                };
+                r.readAsDataURL(input.files[0]);
+            }
         }
 
-        function renderTags(inputEl) {
-            const targetId = inputEl.getAttribute('data-target');
-            const value = inputEl.value;
-            const container = document.getElementById(targetId);
-            const previewContainer = inputEl.id === 'in-skills' ? document.getElementById('tags-skills-preview') : document.getElementById('tags-lang-preview');
-            
-            container.innerHTML = '';
-            previewContainer.innerHTML = '';
-
-            if(!value.trim()) return;
-
-            const tags = value.split(',').map(t => t.trim()).filter(t => t !== '');
-            tags.forEach(tag => {
-                const span = document.createElement('span');
-                span.className = 'cv-tag';
-                span.innerText = tag;
-                container.appendChild(span);
-
-                const pSpan = document.createElement('span');
-                pSpan.className = 'visual-tag';
-                pSpan.innerText = tag;
-                previewContainer.appendChild(pSpan);
-            });
-        }
-
-        function processProfilePhoto(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const base64Img = e.target.result;
-                    const cvPhoto = document.getElementById('cv-photo');
-                    cvPhoto.src = base64Img;
-                    cvPhoto.style.display = 'block';
-                    store.profilePhoto = base64Img;
-                    saveState();
-                    calculateProgress();
+        function toggleSection(switchEl) {
+            const target = switchEl.getAttribute('data-section');
+            const el = document.getElementById(target);
+            if(el) {
+                if(target === 'cv-photo') {
+                    el.style.display = (switchEl.checked && appState.photo) ? 'block' : 'none';
+                } else {
+                    el.style.display = switchEl.checked ? '' : 'none';
                 }
-                reader.readAsDataURL(input.files[0]);
+                appState.visibilities[target] = switchEl.checked;
             }
+            save();
         }
 
-        function toggleSectionVisibility(switchEl) {
-            const targetSectionId = switchEl.getAttribute('data-section');
-            const sectionEl = document.getElementById(targetSectionId);
-            if (sectionEl) {
-                sectionEl.style.display = switchEl.checked ? '' : 'none';
-                store.visibilities[targetSectionId] = switchEl.checked;
-            }
-            saveState();
-            calculateProgress();
-        }
-
-        function changeCVTemplate(className) {
+        function applyTemplate(tmplName) {
             const canvas = document.getElementById('cv-target');
-            canvas.className = 'cv-canvas ' + className;
-            store.template = className;
-            saveState();
-            
-            const bodyContent = canvas.querySelector('.cv-body-content');
-            const mainStream = document.getElementById('cv-main-stream');
-            const sidebarStream = document.getElementById('cv-sidebar-stream');
+            canvas.className = 'cv-canvas ' + tmplName;
+            appState.template = tmplName; save();
 
-            if (className === 'tmpl-criativo') {
-                if (!canvas.querySelector('.cv-sidebar')) {
-                    const sidebar = document.createElement('div');
-                    sidebar.className = 'cv-sidebar';
-                    const mainbar = document.createElement('div');
-                    mainbar.className = 'cv-mainbar';
-                    sidebar.appendChild(sidebarStream);
-                    mainbar.appendChild(mainStream);
-                    bodyContent.innerHTML = '';
-                    bodyContent.appendChild(sidebar);
-                    bodyContent.appendChild(mainbar);
+            const body = canvas.querySelector('.cv-body-content');
+            const main = document.getElementById('cv-main-stream');
+            const side = document.getElementById('cv-sidebar-stream');
+
+            if(tmplName === 'tmpl-criativo') {
+                if(!canvas.querySelector('.cv-sidebar')) {
+                    const sBlock = document.createElement('div'); sBlock.className = 'cv-sidebar';
+                    const mBlock = document.createElement('div'); mBlock.className = 'cv-mainbar';
+                    sBlock.appendChild(side); mBlock.appendChild(main);
+                    body.innerHTML = ''; body.appendChild(sBlock); body.appendChild(mBlock);
                 }
             } else {
-                if (canvas.querySelector('.cv-sidebar')) {
-                    bodyContent.innerHTML = '';
-                    bodyContent.appendChild(mainStream);
-                    bodyContent.appendChild(sidebarStream);
+                if(canvas.querySelector('.cv-sidebar')) {
+                    body.innerHTML = ''; body.appendChild(main); body.appendChild(side);
                 }
             }
         }
 
-        function checkEmptyStates() {
-            ['experience', 'education', 'projects'].forEach(type => {
-                const list = document.getElementById(`repeater-${type}`);
-                let empty = list.querySelector('.repeater-empty-state');
-                if (list.querySelectorAll('.repeater-item').length === 0) {
-                    if (!empty) {
-                        empty = document.createElement('div');
-                        empty.className = 'repeater-empty-state';
-                        empty.innerText = 'Nenhum registro adicionado até ao momento.';
-                        list.appendChild(empty);
-                    }
-                } else if (empty) {
-                    empty.remove();
+        function checkEmpty(type) {
+            const container = document.getElementById(`repeater-${type}`);
+            let empty = container.querySelector('.repeater-empty-state');
+            if(container.querySelectorAll('.repeater-item').length === 0) {
+                if(!empty) {
+                    empty = document.createElement('div'); empty.className = 'repeater-empty-state';
+                    empty.innerText = 'Nenhum registro adicionado.'; container.appendChild(empty);
                 }
-            });
+            } else if(empty) { empty.remove(); }
         }
 
-        function addRepeaterItem(type, data = null) {
-            const listContainer = document.getElementById(`repeater-${type}`);
-            const itemId = data ? data.id : `${type}-${Date.now()}`;
-            
-            const itemHtml = document.createElement('div');
-            itemHtml.className = 'repeater-item';
-            itemHtml.setAttribute('draggable', 'true');
-            itemHtml.setAttribute('id', itemId);
-            
+        function createRepeater(type, data = null) {
+            const container = document.getElementById(`repeater-${type}`);
+            const id = data ? data.id : `${type}-${Date.now()}`;
+            const item = document.createElement('div');
+            item.className = 'repeater-item'; item.setAttribute('draggable', 'true'); item.setAttribute('id', id);
+
             let fields = '';
-            if (type === 'experience') {
+            if(type === 'experience') {
                 fields = `
-                    <div class="form-group"><label>Empresa / Organização</label><input type="text" class="form-control rep-field" data-field="company" value="${data?data.company:''}" placeholder="Ex: Google"></div>
-                    <div class="form-group"><label>Cargo Profissional</label><input type="text" class="form-control rep-field" data-field="role" value="${data?data.role:''}" placeholder="Ex: Lead Front-end Engineer"></div>
-                    <div class="form-group"><label>Período de Atividade</label><input type="text" class="form-control rep-field" data-field="period" value="${data?data.period:''}" placeholder="Ex: Jan 2024 - Presente"></div>
-                    <div class="form-group"><label>Atividades e Conquistas</label><textarea class="form-control rep-field" data-field="desc" rows="2" placeholder="Descreva as suas responsabilidades e resultados alcançados...">${data?data.desc:''}</textarea></div>
+                    <div class="form-group"><label>Empresa</label><input type="text" class="form-control rf" data-f="company" value="${data?data.company:''}"></div>
+                    <div class="form-group"><label>Função</label><input type="text" class="form-control rf" data-f="role" value="${data?data.role:''}"></div>
+                    <div class="form-group"><label>Período</label><input type="text" class="form-control rf" data-f="period" value="${data?data.period:''}"></div>
+                    <div class="form-group"><label>Atividades</label><textarea class="form-control rf" data-f="desc" rows="2">${data?data.desc:''}</textarea></div>
                 `;
-            } else if (type === 'education') {
+            } else if(type === 'education') {
                 fields = `
-                    <div class="form-group"><label>Instituição de Ensino</label><input type="text" class="form-control rep-field" data-field="institution" value="${data?data.institution:''}" placeholder="Ex: Universidade"></div>
-                           <div class="form-group"><label>Grau / Curso / Especialização</label><input type="text" class="form-control rep-field" data-field="degree" value="${data?data.degree:''}" placeholder="Ex: Licenciatura em Engenharia de Software"></div>
-                    <div class="form-group"><label>Período</label><input type="text" class="form-control rep-field" data-field="period" value="${data?data.period:''}" placeholder="Ex: 2020 - 2024"></div>
-                    <div class="form-group"><label>Notas / Descrição Extra</label><textarea class="form-control rep-field" data-field="desc" rows="2" placeholder="Informações adicionais relevantes...">${data?data.desc:''}</textarea></div>
+                    <div class="form-group"><label>Instituição</label><input type="text" class="form-control rf" data-f="inst" value="${data?data.inst:''}"></div>
+                    <div class="form-group"><label>Curso</label><input type="text" class="form-control rf" data-f="degree" value="${data?data.degree:''}"></div>
+                    <div class="form-group"><label>Período</label><input type="text" class="form-control rf" data-f="period" value="${data?data.period:''}"></div>
                 `;
-            } else if (type === 'projects') {
+            } else if(type === 'projects') {
                 fields = `
-                    <div class="form-group"><label>Título do Projeto</label><input type="text" class="form-control rep-field" data-field="title" value="${data?data.title:''}" placeholder="Ex: SaaS E-Commerce Platform"></div>
-                    <div class="form-group"><label>Link do Portfólio / Repositório</label><input type="text" class="form-control rep-field" data-field="link" value="${data?data.link:''}" placeholder="Ex: github.com/... "></div>
-                    <div class="form-group"><label>Período</label><input type="text" class="form-control rep-field" data-field="period" value="${data?data.period:''}" placeholder="Ex: 2025"></div>
-                    <div class="form-group"><label>Breve Escopo de Desenvolvimento</label><textarea class="form-control rep-field" data-field="desc" rows="2" placeholder="Tecnologias utilizadas e impacto do projeto...">${data?data.desc:''}</textarea></div>
+                    <div class="form-group"><label>Nome do Projeto</label><input type="text" class="form-control rf" data-f="title" value="${data?data.title:''}"></div>
+                    <div class="form-group"><label>Link</label><input type="text" class="form-control rf" data-f="link" value="${data?data.link:''}"></div>
+                    <div class="form-group"><label>Descrição</label><textarea class="form-control rf" data-f="desc" rows="2">${data?data.desc:''}</textarea></div>
                 `;
             }
 
-            itemHtml.innerHTML = fields + `
-                <div class="repeater-actions">
-                    <button class="btn btn-sec btn-danger" style="padding: 0.35rem 0.75rem; font-size:0.75rem;" onclick="removeRepeaterItem('${type}', '${itemId}')">Remover</button>
-                </div>
-            `;
-
-            itemHtml.querySelectorAll('.rep-field').forEach(input => {
-                input.addEventListener('input', () => syncRepeaterToCanvas(type));
-            });
-
-            listContainer.appendChild(itemHtml);
-            checkEmptyStates();
-            
-            if(!data) syncRepeaterToCanvas(type);
+            item.innerHTML = fields + `<div class="repeater-actions"><button class="btn btn-sec btn-danger" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="killRepeater('${type}','${id}')">Remover</button></div>`;
+            item.querySelectorAll('.rf').forEach(i => i.addEventListener('input', () => syncCanvas(type)));
+            container.appendChild(item);
+            checkEmpty(type);
+            if(!data) syncCanvas(type);
         }
 
-        function removeRepeaterItem(type, itemId) {
-            document.getElementById(itemId).remove();
-            checkEmptyStates();
-            syncRepeaterToCanvas(type);
+        function killRepeater(type, id) {
+            document.getElementById(id).remove();
+            checkEmpty(type); syncCanvas(type);
         }
 
-        function syncRepeaterToCanvas(type) {
-            const listContainer = document.getElementById(`repeater-${type}`);
-            const items = listContainer.querySelectorAll('.repeater-item');
-            const targetRender = document.getElementById(`cv-render-${type}`);
-            targetRender.innerHTML = '';
-            let serializedData = [];
+        function syncCanvas(type) {
+            const list = document.getElementById(`repeater-${type}`);
+            const render = document.getElementById(`cv-render-${type}`);
+            render.innerHTML = '';
+            let payload = [];
 
-            items.forEach(item => {
-                let obj = { id: item.id };
-                item.querySelectorAll('.rep-field').forEach(input => { obj[input.getAttribute('data-field')] = input.value; });
-                serializedData.push(obj);
+            list.querySelectorAll('.repeater-item').forEach(item => {
+                let chunk = { id: item.id };
+                item.querySelectorAll('.rf').forEach(i => chunk[i.getAttribute('data-f')] = i.value);
+                payload.push(chunk);
 
-                const block = document.createElement('div');
-                block.className = 'cv-grid-item';
-
-                if (type === 'experience') {
-                    block.innerHTML = `
-                        <div class="cv-item-header"><span>${obj.company || 'Empresa / Organização'}</span><span>${obj.period || ''}</span></div>
-                        <div class="cv-item-sub">${obj.role || 'Cargo Profissional'}</div>
-                        <p class="cv-text-block">${obj.desc || ''}</p>
-                    `;
-                } else if (type === 'education') {
-                    block.innerHTML = `
-                        <div class="cv-item-header"><span>${obj.institution || 'Instituição de Ensino'}</span><span>${obj.period || ''}</span></div>
-                        <div class="cv-item-sub">${obj.degree || 'Grau / Curso'}</div>
-                        <p class="cv-text-block">${obj.desc || ''}</p>
-                    `;
-                } else if (type === 'projects') {
-                    block.innerHTML = `
-                        <div class="cv-item-header"><span>${obj.title || 'Título do Projeto'}</span><span>${obj.period || ''}</span></div>
-                        <div class="cv-item-sub" style="color:var(--accent); font-size:0.8rem; font-weight:600;">${obj.link || ''}</div>
-                        <p class="cv-text-block">${obj.desc || ''}</p>
-                    `;
+                const node = document.createElement('div'); node.className = 'cv-grid-item';
+                if(type === 'experience') {
+                    node.innerHTML = `<div class="cv-item-header"><span>${chunk.company || '---'}</span><span>${chunk.period || ''}</span></div><div class="cv-item-sub">${chunk.role || ''}</div><p class="cv-text-block">${chunk.desc || ''}</p>`;
+                } else if(type === 'education') {
+                    node.innerHTML = `<div class="cv-item-header"><span>${chunk.inst || '---'}</span><span>${chunk.period || ''}</span></div><div class="cv-item-sub">${chunk.degree || ''}</div>`;
+                } else if(type === 'projects') {
+                    node.innerHTML = `<div class="cv-item-header"><span>${chunk.title || '---'}</span><span style="color:var(--accent); font-size:0.75rem;">${chunk.link || ''}</span></div><p class="cv-text-block">${chunk.desc || ''}</p>`;
                 }
-                targetRender.appendChild(block);
+                render.appendChild(node);
             });
-
-            store[type] = serializedData;
-            saveState();
-            calculateProgress();
+            appState[type] = payload; save();
         }
 
-        function setupDragAndDrop() {
-            const lists = document.querySelectorAll('.repeater-list');
-            lists.forEach(list => {
+        function setupDragDropEngine() {
+            document.querySelectorAll('.repeater-list').forEach(list => {
                 list.addEventListener('dragstart', e => { if(e.target.classList.contains('repeater-item')) e.target.classList.add('dragging'); });
                 list.addEventListener('dragend', e => {
                     if(e.target.classList.contains('repeater-item')) {
                         e.target.classList.remove('dragging');
-                        syncRepeaterToCanvas(list.id.replace('repeater-', ''));
+                        syncCanvas(list.id.replace('repeater-', ''));
                     }
                 });
                 list.addEventListener('dragover', e => {
                     e.preventDefault();
-                    const draggingItem = list.querySelector('.dragging');
-                    const siblings = [...list.querySelectorAll('.repeater-item:not(.dragging)')];
-                    const nextSibling = siblings.find(sib => e.clientY <= sib.getBoundingClientRect().top + sib.getBoundingClientRect().height / 2);
-                    if(draggingItem) list.insertBefore(draggingItem, nextSibling);
+                    const current = list.querySelector('.dragging');
+                    const cards = [...list.querySelectorAll('.repeater-item:not(.dragging)')];
+                    const next = cards.find(c => e.clientY <= c.getBoundingClientRect().top + c.getBoundingClientRect().height / 2);
+                    if(current) list.insertBefore(current, next);
                 });
             });
         }
 
-        function calculateProgress() {
-            let totalPoints = 8, score = 0;
-            if (document.getElementById('in-name').value) score++;
-            if (document.getElementById('in-role').value) score++;
-            if (document.getElementById('in-email').value) score++;
-            if (document.getElementById('in-about').value) score++;
-            if (store.experience.length > 0) score++;
-            if (store.education.length > 0) score++;
-            if (document.getElementById('in-skills').value) score++;
-            if (store.profilePhoto) score++;
-
-            document.getElementById('cv-progress').style.width = `${Math.round((score / totalPoints) * 100)}%`;
-        }
-
-        function switchTab(evt, tabId) {
+        function switchTab(e, id) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            evt.currentTarget.classList.add('active');
+            document.getElementById(id).classList.add('active');
+            e.currentTarget.classList.add('active');
         }
+      /* ==========================================================================
+           NOVO MOTOR DE EXPORTAÇÃO PIXEL-PERFECT (jspdf + html2canvas)
+           ========================================================================== */
+        async function exportPixelPerfectPDF() {
+            showNotification("Magnificando e compilando PDF de alta fidelidade...");
+            const canvasElement = document.getElementById('cv-target');
+            
+            // Força o estado A4 absoluto isolado em background
+            canvasElement.classList.add('pdf-render-mode');
 
-        function generateCanvasPDF() {
-            showToast("Renderizando PDF via Canvas Engine...");
-            const element = document.getElementById('cv-target');
-            element.classList.add('forced-pdf-print');
-
-            const opt = {
-                margin: 0, filename: 'CV_Premium_Enterprise.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2.5, useCORS: true, letterRendering: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            // Configurações de anti-aliasing avançado via html2canvas
+            const options = {
+                scale: 3.0, // Multiplica a densidade de pixels por 3 (Resolução Ultra-HD)
+                useCORS: true,
+                logging: false,
+                allowTaint: true,
+                backgroundColor: "#ffffff"
             };
 
-            html2pdf().set(opt).from(element).save().then(() => {
-                element.classList.remove('forced-pdf-print');
-                showToast("Download concluído com sucesso!");
-            }).catch(err => {
-                element.classList.remove('forced-pdf-print');
-                showToast("Falha ao exportar PDF.");
-                console.error(err);
-            });
+            try {
+                const canvas = await html2canvas(canvasElement, options);
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                
+                const { jsPDF } = window.jspdf;
+                // Instancia o documento em formato A4 nativo estruturado
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+                pdf.save('Curriculum_Vitae_Premium.pdf');
+                showNotification("Documento exportado com perfeição!");
+            } catch (error) {
+                console.error(error);
+                showNotification("Erro crítico na compilação do PDF.");
+            } finally {
+                canvasElement.classList.remove('pdf-render-mode');
+            }
         }
 
-        function triggerNativePrint() { window.print(); }
-
-        function saveState() {
-            store.formValues = {
+        function save() {
+            appState.forms = {
                 name: document.getElementById('in-name').value,
                 role: document.getElementById('in-role').value,
                 email: document.getElementById('in-email').value,
@@ -922,64 +750,60 @@
                 location: document.getElementById('in-location').value,
                 about: document.getElementById('in-about').value,
                 skills: document.getElementById('in-skills').value,
-                languages: document.getElementById('in-languages').value,
+                lang: document.getElementById('in-lang').value
             };
-            localStorage.setItem('saas_premium_cv_enterprise_store', JSON.stringify(store));
+            localStorage.setItem('saas_ultimate_cv_v2', JSON.stringify(appState));
         }
 
-        function loadState() {
-            const saved = localStorage.getItem('saas_premium_cv_enterprise_store');
-            if (saved) {
+        function loadApplicationState() {
+            const data = localStorage.getItem('saas_ultimate_cv_v2');
+            if(data) {
                 try {
-                    store = JSON.parse(saved);
-                    if (store.theme) document.body.setAttribute('data-theme', store.theme);
-                    if (store.accent) {
-                        document.documentElement.style.setProperty('--accent', store.accent);
-                        const activeDot = document.querySelector(`.color-dot[style*="${store.accent}"]`);
-                        if(activeDot) activeDot.classList.add('active');
+                    appState = JSON.parse(data);
+                    if(appState.theme) document.body.setAttribute('data-theme', appState.theme);
+                    if(appState.accent) {
+                        document.documentElement.style.setProperty('--accent', appState.accent);
+                        const targetDot = document.querySelector(`.color-dot[style*="${appState.accent}"]`);
+                        if(targetDot) targetDot.classList.add('active');
                     }
-                    if (store.formValues) {
-                        document.getElementById('in-name').value = store.formValues.name || '';
-                        document.getElementById('in-role').value = store.formValues.role || '';
-                        document.getElementById('in-email').value = store.formValues.email || '';
-                        document.getElementById('in-phone').value = store.formValues.phone || '';
-                        document.getElementById('in-location').value = store.formValues.location || '';
-                        document.getElementById('in-about').value = store.formValues.about || '';
-                        document.getElementById('in-skills').value = store.formValues.skills || '';
-                        document.getElementById('in-languages').value = store.formValues.languages || '';
+                    if(appState.forms) {
+                        document.getElementById('in-name').value = appState.forms.name || '';
+                        document.getElementById('in-role').value = appState.forms.role || '';
+                        document.getElementById('in-email').value = appState.forms.email || '';
+                        document.getElementById('in-phone').value = appState.forms.phone || '';
+                        document.getElementById('in-location').value = appState.forms.location || '';
+                        document.getElementById('in-about').value = appState.forms.about || '';
+                        document.getElementById('in-skills').value = appState.forms.skills || '';
+                        document.getElementById('in-lang').value = appState.forms.lang || '';
                         
                         document.querySelectorAll('.bind-val').forEach(i => i.dispatchEvent(new Event('input')));
                         document.querySelectorAll('.tags-input').forEach(i => i.dispatchEvent(new Event('input')));
                     }
-                    if (store.profilePhoto) {
-                        const cvPhoto = document.getElementById('cv-photo');
-                        cvPhoto.src = store.profilePhoto; cvPhoto.style.display = 'block';
+                    if(appState.photo) {
+                        const img = document.getElementById('cv-photo');
+                        img.src = appState.photo; img.style.display = 'block';
                     }
-                    if (store.visibilities) {
-                        Object.keys(store.visibilities).forEach(id => {
-                            const sw = document.querySelector(`input[data-section="${id}"]`);
-                            if(sw) { sw.checked = store.visibilities[id]; toggleSectionVisibility(sw); }
+                    if(appState.visibilities) {
+                        Object.keys(appState.visibilities).forEach(key => {
+                            const sw = document.querySelector(`input[data-section="${key}"]`);
+                            if(sw) { sw.checked = appState.visibilities[key]; toggleSection(sw); }
                         });
                     }
-                    if(store.experience) store.experience.forEach(item => addRepeaterItem('experience', item));
-                    if(store.education) store.education.forEach(item => addRepeaterItem('education', item));
-                    if(store.projects) store.projects.forEach(item => addRepeaterItem('projects', item));
+                    if(appState.experience) appState.experience.forEach(x => createRepeater('experience', x));
+                    if(appState.education) appState.education.forEach(x => createRepeater('education', x));
+                    if(appState.projects) appState.projects.forEach(x => createRepeater('projects', x));
                     
-                    ['experience', 'education', 'projects'].forEach(type => syncRepeaterToCanvas(type));
-                    if (store.template) { document.getElementById('template-select').value = store.template; changeCVTemplate(store.template); }
-                    calculateProgress();
-                } catch (e) { console.error(e); }
+                    ['experience', 'education', 'projects'].forEach(type => syncCanvas(type));
+                    if(appState.template) { document.getElementById('template-select').value = appState.template; applyTemplate(appState.template); }
+                } catch(err) { console.error("Falha no parse do localState", err); }
             } else {
-                // Ativa cor default inicial
-                const d = document.querySelector('.color-dot');
-                if(d) d.classList.add('active');
+                const d = document.querySelector('.color-dot'); if(d) d.classList.add('active');
             }
         }
 
         function clearData() {
-            if(confirm("Deseja apagar permanentemente todos os dados e rascunhos informados neste dispositivo?")) {
-                localStorage.removeItem('saas_premium_cv_enterprise_store');
-                window.location.reload();
+            if(confirm("Limpar permanentemente todas as alterações rascunhadas?")) {
+                localStorage.removeItem('saas_ultimate_cv_v2'); window.location.reload();
             }
         }
     </script>
