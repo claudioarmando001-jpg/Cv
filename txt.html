@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SaaS Premium CV Builder Enterprise v3</title>
+    <title>SaaS Premium CV Builder Enterprise v4</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -77,9 +77,6 @@
         .logo-area span { color: var(--accent); }
         .header-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
 
-        .color-picker-group { display: flex; gap: 0.35rem; align-items: center; background: var(--bg-surface-secondary); padding: 0.35rem; border-radius: 30px; }
-        .color-dot { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; transition: var(--transition); border: 2px solid transparent; }
-        .color-dot.active { border-color: var(--text-main); transform: scale(1.15); }
         .theme-switch { background: var(--bg-surface-secondary); width: 42px; height: 22px; border-radius: 20px; cursor: pointer; position: relative; border: 1px solid var(--border-color); }
         .theme-switch::before { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: var(--text-main); border-radius: 50%; transition: var(--transition); }
         [data-theme="dark"] .theme-switch::before { transform: translateX(20px); background: var(--accent); }
@@ -91,18 +88,37 @@
         .btn-danger { background: #fee2e2; color: #ef4444; }
         .btn-danger:hover { background: #ef4444; color: white; }
 
-        /* --- CONTAINER DE TRABALHO RESPONSIVO --- */
+        /* --- CONTAINER DE TRABALHO GRID --- */
         .app-container { display: grid; grid-template-columns: 1fr; min-height: calc(100vh - 70px); }
-        @media (min-width: 1024px) { .app-container { grid-template-columns: 460px 1fr; } }
-        @media (min-width: 1400px) { .app-container { grid-template-columns: 500px 1fr; } }
+        @media (min-width: 1024px) { .app-container { grid-template-columns: 80px 420px 1fr; } }
 
-        /* PAINEL DE CONTROLE (ESQUERDA) */
-        .control-panel { padding: 1.25rem; border-right: 1px solid var(--border-color); background: var(--bg-surface); max-height: calc(100vh - 70px); overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; }
-        .tabs-nav { display: flex; gap: 0.25rem; background: var(--bg-surface-secondary); padding: 0.25rem; border-radius: var(--radius-md); overflow-x: auto; position: sticky; top: 0; z-index: 20; }
-        .tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 0.5rem 0.75rem; border-radius: calc(var(--radius-md) - 2px); cursor: pointer; font-weight: 600; font-size: 0.8rem; flex: 1; white-space: nowrap; transition: var(--transition); }
-        .tab-btn.active { background: var(--bg-surface); color: var(--text-main); box-shadow: var(--shadow-sm); }
+        /* NOVA BARRA LATERAL DE SEÇÕES ULTRA VISÍVEL */
+        .sections-sidebar {
+            background: #0f172a; display: flex; flex-direction: row; justify-content: space-around;
+            padding: 0.5rem; gap: 0.5rem; border-right: 1px solid rgba(255,255,255,0.05); z-index: 30;
+        }
+        @media (min-width: 1024px) {
+            .sections-sidebar { flex-direction: column; justify-content: flex-start; padding: 1.5rem 0.5rem; }
+        }
+        .sidebar-tab-btn {
+            background: transparent; border: none; color: #94a3b8; padding: 0.75rem;
+            border-radius: var(--radius-md); cursor: pointer; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 0.25rem; font-size: 0.7rem;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; flex: 1;
+            transition: var(--transition); border: 1px solid transparent;
+        }
+        @media (min-width: 1024px) { .sidebar-tab-btn { flex: none; width: 100%; height: 70px; } }
+        .sidebar-tab-btn:hover { color: #f8fafc; background: rgba(255,255,255,0.05); }
+        .sidebar-tab-btn.active {
+            color: #ffffff; background: var(--accent); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        /* PAINEL DE FORMULÁRIOS */
+        .control-panel { padding: 1.5rem; border-right: 1px solid var(--border-color); background: var(--bg-surface); max-height: calc(100vh - 70px); overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; }
         .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .tab-content.active { display: block; animation: fadeInForm 0.2s ease-in-out; }
+        @keyframes fadeInForm { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
         /* INTERRUPTORES GLOBAIS DE EXCLUSÃO */
         .section-header-toggle { display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 1rem; }
@@ -125,9 +141,8 @@
 
         /* LISTAS DINÂMICAS REPEATER */
         .repeater-list { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
-        .repeater-item { background: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; position: relative; cursor: grab; padding-left: 1.75rem; }
-        .repeater-item::before { content: '⋮⋮'; position: absolute; left: 6px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem; }
-        .repeater-empty-state { text-align: center; padding: 1.5rem 1rem; border: 1px dashed var(--border-color); border-radius: var(--radius-md); color: var(--text-muted); font-size: 0.8rem; }
+        .repeater-item { background: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; position: relative; }
+        .repeater-empty-state { text-align: center; padding: 1.5rem 1rem; border: 1px dashed var(--border-color); border-radius: var(--radius-md); color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem; }
         .repeater-actions { display: flex; justify-content: flex-end; margin-top: 0.5rem; border-top: 1px dashed var(--border-color); padding-top: 0.5rem; }
         .tags-output-container { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
         .visual-tag { background: var(--accent); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
@@ -170,58 +185,29 @@
         #cv-main-stream { display: flex; flex-direction: column; gap: 1rem; }
         #cv-sidebar-stream { display: flex; flex-direction: column; gap: 1rem; }
 
-        /* ==========================================================================
-           CATÁLOGO COMPLETO DE TEMPLATES (1 ATÉ 12)
-           ========================================================================== */
-        /* 1. EXECUTIVO */
+        /* CATALOGO DE TEMPLATES */
         .cv-canvas.tmpl-executivo { font-family: 'Georgia', serif; }
         .cv-canvas.tmpl-executivo .cv-section-title { border-bottom-color: var(--accent); color: var(--accent); }
-        /* 2. MINIMALISTA */
+        
         .cv-canvas.tmpl-minimalista { padding: 20mm; }
         .cv-canvas.tmpl-minimalista .cv-section-title { border-bottom: none; font-weight: 600; position:relative; }
         .cv-canvas.tmpl-minimalista .cv-section-title::after { content: ''; position: absolute; bottom: 0; left: 0; width: 20px; height: 2px; background: #000; }
-        /* 3. CRIATIVO ASYMMETRIC (Split columns) */
+        
         .cv-canvas.tmpl-criativo .cv-body-content { display: grid; grid-template-columns: 1fr 1.8fr; gap: 1.25rem; }
         .cv-canvas.tmpl-criativo .cv-sidebar-wrapper { background: #f8fafc; padding: 4mm; border-right: 1px solid #e2e8f0; }
-        /* 4. CORPORATIVO SOLID */
+        
         .cv-canvas.tmpl-corporativo { padding: 0; }
         .cv-canvas.tmpl-corporativo .cv-header { background: #0f172a; color: white; padding: 12mm 16mm; margin-bottom: 1.25rem; border: none; }
         .cv-canvas.tmpl-corporativo .cv-header .cv-name { color: white; }
         .cv-canvas.tmpl-corporativo .cv-header .cv-meta { color: #94a3b8; }
         .cv-canvas.tmpl-corporativo .cv-body-content { padding: 0 16mm 16mm 16mm; }
-        /* 5. ESCURO LUXURY */
+
         .cv-canvas.tmpl-escuro-premium { background: #0f172a; color: #f8fafc; }
         .cv-canvas.tmpl-escuro-premium .cv-name, .cv-canvas.tmpl-escuro-premium .cv-item-header { color: #ffffff; }
         .cv-canvas.tmpl-escuro-premium .cv-meta, .cv-canvas.tmpl-escuro-premium .cv-item-sub, .cv-canvas.tmpl-escuro-premium .cv-text-block { color: #cbd5e1; }
         .cv-canvas.tmpl-escuro-premium .cv-section-title { border-bottom-color: var(--accent); color: var(--accent); }
         .cv-canvas.tmpl-escuro-premium .cv-tag { background: #1e293b; color: #f8fafc; }
-        /* 6. MODERNO BOLD */
-        .cv-canvas.tmpl-moderno-bold .cv-section-title { background: #0f172a; color: white; padding: 0.3rem 0.5rem; border-bottom: none; }
-        /* 7. ELEGANTE LINEAR */
-        .cv-canvas.tmpl-elegante-linear .cv-header { display: flex; flex-direction: column; text-align: center; border-bottom: 1px dashed #cbd5e1; }
-        .cv-canvas.tmpl-elegante-linear .cv-meta { justify-content: center; }
-        /* 8. TECNICO ATS */
-        .cv-canvas.tmpl-tecnico-ats { font-family: 'Courier New', monospace; color: #000; }
-        .cv-canvas.tmpl-tecnico-ats .cv-section-title { border-bottom: 1px solid #000; color: #000; }
-        /* 9. MINIMALISTA DARK MATRIX */
-        .cv-canvas.tmpl-dark-matrix { background: #070a13; color: #a1a1aa; font-family: monospace; }
-        .cv-canvas.tmpl-dark-matrix .cv-name { color: #f4f4f5; }
-        .cv-canvas.tmpl-dark-matrix .cv-section-title { border-bottom: 1px solid var(--accent); color: var(--accent); }
-        .cv-canvas.tmpl-dark-matrix .cv-item-header { color: #e4e4e7; }
-        /* 10. EXECUTIVE LEFT BORDER */
-        .cv-canvas.tmpl-left-border { border-left: 8mm solid var(--accent); }
-        .cv-canvas.tmpl-left-border .cv-section-title { color: var(--accent); border-bottom-color: var(--accent); }
-        /* 11. ACADEMIC CHRONOS */
-        .cv-canvas.tmpl-academic { font-family: 'Times New Roman', Times, serif; }
-        .cv-canvas.tmpl-academic .cv-section-title { border-bottom: 1px solid #000; text-align: left; font-size: 1.1rem; }
-        .cv-canvas.tmpl-academic .cv-name { font-size: 2rem; text-align: center; display: block; width: 100%; }
-        .cv-canvas.tmpl-academic .cv-header { flex-direction: column; text-align: center; }
-        .cv-canvas.tmpl-academic .cv-meta { justify-content: center; }
-        /* 12. CREATIVE NEO-GLOW */
-        .cv-canvas.tmpl-neo-glow .cv-section { background: #fafafa; padding: 1rem; border-radius: 6px; border-left: 4px solid var(--accent); }
-        .cv-canvas.tmpl-neo-glow .cv-section-title { border: none; color: var(--text-main); }
 
-        /* FORCE RENDERING ISOLATION FOR PDF TARGET */
         .pdf-render-mode { width: 210mm !important; min-height: 297mm !important; max-width: 210mm !important; position: absolute !important; left: 0 !important; top: 0 !important; z-index: -99999 !important; background: #ffffff !important; transform: none !important; }
     </style>
 </head>
@@ -232,34 +218,38 @@
 
     <header>
         <div class="logo-area">
-            <h1>SaaS Builder <span>Ultimate</span></h1>
+            <h1>SaaS Builder <span>Enterprise v4</span></h1>
         </div>
         <div class="header-actions">
-            <div class="color-picker-group">
-                <div class="color-dot" style="background:#2563eb;" onclick="setBrandAccent('#2563eb', this)"></div>
-                <div class="color-dot" style="background:#059669;" onclick="setBrandAccent('#059669', this)"></div>
-                <div class="color-dot" style="background:#7c3aed;" onclick="setBrandAccent('#7c3aed', this)"></div>
-                <div class="color-dot" style="background:#ea580c;" onclick="setBrandAccent('#ea580c', this)"></div>
-                <div class="color-dot" style="background:#db2777;" onclick="setBrandAccent('#db2777', this)"></div>
-            </div>
             <div class="theme-switch" id="theme-toggle"></div>
-            <button class="btn btn-sec btn-danger" onclick="clearData()">Resetar</button>
-            <button class="btn" onclick="exportPixelPerfectPDF()">Exportar PDF Magnificado</button>
+            <button class="btn btn-sec btn-danger" onclick="clearData()">Resetar Tudo</button>
+            <button class="btn" onclick="exportPixelPerfectPDF()">Exportar PDF</button>
         </div>
     </header>
 
     <div class="app-container">
-        <!-- CONTROL PANEL -->
-              <aside class="control-panel">
-            <nav class="tabs-nav">
-                <button class="tab-btn active" onclick="switchTab(event, 'tab-dados')">Dados</button>
-                <button class="tab-btn" onclick="switchTab(event, 'tab-experiencia')">Carreira</button>
-                <button class="tab-btn" onclick="switchTab(event, 'tab-educacao')">Educação</button>
-                <button class="tab-btn" onclick="switchTab(event, 'tab-projetos')">Projetos</button>
-                <button class="tab-btn" onclick="switchTab(event, 'tab-skills')">Skills</button>
-            </nav>
+        <!-- NOVA BARRA LATERAL DA ESQUERDA (NAVEGAÇÃO DE SEÇÕES) -->
+        <aside class="sections-sidebar">
+            <button class="sidebar-tab-btn active" onclick="switchTab(event, 'tab-dados')">
+                <span>Dados</span>
+            </button>
+            <button class="sidebar-tab-btn" onclick="switchTab(event, 'tab-experiencia')">
+                <span>Carreira</span>
+            </button>
+            <button class="sidebar-tab-btn" onclick="switchTab(event, 'tab-educacao')">
+                <span>Estudos</span>
+            </button>
+            <button class="sidebar-tab-btn" onclick="switchTab(event, 'tab-projetos')">
+                <span>Projetos</span>
+            </button>
+            <button class="sidebar-tab-btn" onclick="switchTab(event, 'tab-skills')">
+                <span>Skills</span>
+            </button>
+        </aside>
 
-            <!-- TAB: DADOS E CONFIGURAÇÕES DE VISIBILIDADE -->
+        <!-- PAINEL CONTEÚDO DOS FORMULÁRIOS -->
+           <main class="control-panel">
+            <!-- TAB: DADOS -->
             <div id="tab-dados" class="tab-content active">
                 <div class="section-header-toggle">
                     <h3>Cabeçalho Principal</h3>
@@ -330,7 +320,7 @@
                 </div>
             </div>
 
-            <!-- TAB: EXPERIÊNCIA REPEATER -->
+            <!-- TAB: EXPERIÊNCIA -->
             <div id="tab-experiencia" class="tab-content">
                 <div class="section-header-toggle">
                     <h3>Experiência Profissional</h3>
@@ -340,10 +330,10 @@
                     </label>
                 </div>
                 <div id="repeater-experience" class="repeater-list"></div>
-                <button class="btn btn-sec" style="width:100%" onclick="addNewRepeaterItem('experience')">+ Adicionar Experiência</button>
+                <button class="btn btn-sec" style="width:100%; margin-top:0.5rem;" onclick="addNewRepeaterItem('experience')">+ Adicionar Novo Bloco de Carreira</button>
             </div>
 
-            <!-- TAB: EDUCAÇÃO REPEATER -->
+            <!-- TAB: EDUCAÇÃO -->
             <div id="tab-educacao" class="tab-content">
                 <div class="section-header-toggle">
                     <h3>Formação Académica</h3>
@@ -353,10 +343,10 @@
                     </label>
                 </div>
                 <div id="repeater-education" class="repeater-list"></div>
-                <button class="btn btn-sec" style="width:100%" onclick="addNewRepeaterItem('education')">+ Adicionar Educação</button>
+                <button class="btn btn-sec" style="width:100%; margin-top:0.5rem;" onclick="addNewRepeaterItem('education')">+ Adicionar Nova Formação</button>
             </div>
 
-            <!-- TAB: PROJETOS REPEATER -->
+            <!-- TAB: PROJETOS -->
             <div id="tab-projetos" class="tab-content">
                 <div class="section-header-toggle">
                     <h3>Projetos Realizados</h3>
@@ -366,10 +356,10 @@
                     </label>
                 </div>
                 <div id="repeater-projects" class="repeater-list"></div>
-                <button class="btn btn-sec" style="width:100%" onclick="addNewRepeaterItem('projects')">+ Adicionar Projeto</button>
+                <button class="btn btn-sec" style="width:100%; margin-top:0.5rem;" onclick="addNewRepeaterItem('projects')">+ Adicionar Novo Projeto</button>
             </div>
 
-            <!-- TAB: SKILLS & IDIOMAS -->
+            <!-- TAB: SKILLS -->
             <div id="tab-skills" class="tab-content">
                 <div class="section-header-toggle">
                     <h3>Habilidades</h3>
@@ -379,7 +369,7 @@
                     </label>
                 </div>
                 <div class="form-group">
-                    <input type="text" class="form-control tags-input" data-target="cv-skills-list" id="in-skills" placeholder="Separe por vírgulas">
+                    <input type="text" class="form-control tags-input" data-target="cv-skills-list" id="in-skills" placeholder="Separe as habilidades por vírgulas">
                     <div class="tags-output-container" id="preview-tags-skills"></div>
                 </div>
 
@@ -391,16 +381,16 @@
                     </label>
                 </div>
                 <div class="form-group">
-                    <input type="text" class="form-control tags-input" data-target="cv-lang-list" id="in-lang" placeholder="Separe por vírgulas">
+                    <input type="text" class="form-control tags-input" data-target="cv-lang-list" id="in-lang" placeholder="Separe os idiomas por vírgulas">
                     <div class="tags-output-container" id="preview-tags-lang"></div>
                 </div>
             </div>
-        </aside>
-       <!-- PREVIEW PANEL -->
-        <main class="preview-panel">
+        </main>
+     <!-- PRÉ-VISUALIZAÇÃO (DIREITA) -->
+        <aside class="preview-panel">
             <div class="preview-sticky">
                 <div class="template-selector">
-                    <label>Layout Engine Core</label>
+                    <label>Design do Template</label>
                     <div class="select-wrapper">
                         <select id="template-select" onchange="applyTemplate(this.value)">
                             <option value="tmpl-executivo">1. Modelo Executivo (Corporate Alpha)</option>
@@ -408,13 +398,6 @@
                             <option value="tmpl-criativo">3. Modelo Criativo (Assimétrico Splitted)</option>
                             <option value="tmpl-corporativo">4. Modelo Corporativo (Solid Header)</option>
                             <option value="tmpl-escuro-premium">5. Modelo Escuro Premium (Luxury Midnight)</option>
-                            <option value="tmpl-moderno-bold">6. Modelo Moderno Bold (Structured)</option>
-                            <option value="tmpl-elegante-linear">7. Modelo Elegante Linear (Centered)</option>
-                            <option value="tmpl-tecnico-ats">8. Modelo Técnico ATS (Parsing Optimized)</option>
-                            <option value="tmpl-dark-matrix">9. Minimalista Dark Matrix (Tech Synth)</option>
-                            <option value="tmpl-left-border">10. Executive Left Border (Solid Accent)</option>
-                            <option value="tmpl-academic">11. Academic Chronos (Curriculum Vitae)</option>
-                            <option value="tmpl-neo-glow">12. Creative Neo-Glow (Modern Accented)</option>
                         </select>
                     </div>
                 </div>
@@ -440,7 +423,6 @@
                             <p id="cv-about-text" class="cv-text-block">Descrição de perfil...</p>
                         </div>
 
-                        <!-- FLUXOS DE LAYOUT INTERNOS -->
                         <div id="cv-main-stream">
                             <div class="cv-section" id="section-cv-exp">
                                 <h4 class="cv-section-title">Experiência Profissional</h4>
@@ -470,12 +452,12 @@
                 </div>
 
             </div>
-        </main>
+        </aside>
     </div>
 
     <script>
         let appState = {
-            theme: 'light', template: 'tmpl-executivo', accent: '#2563eb',
+            theme: 'light', template: 'tmpl-executivo',
             visibilities: {}, experience: [], education: [], projects: [], photo: ""
         };
 
@@ -483,7 +465,6 @@
             initSystem();
             loadApplicationState();
             setupInteractions();
-            setupDragDropEngine();
             
             setTimeout(() => {
                 const loader = document.getElementById('loader');
@@ -507,13 +488,6 @@
                 document.body.setAttribute('data-theme', next);
                 appState.theme = next; save();
             });
-        }
-
-        function setBrandAccent(color, el) {
-            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
-            if(el) el.classList.add('active');
-            document.documentElement.style.setProperty('--accent', color);
-            appState.accent = color; save();
         }
 
         function setupInteractions() {
@@ -582,7 +556,6 @@
             const side = document.getElementById('cv-sidebar-stream');
             const about = document.getElementById('section-cv-about');
 
-            // Remove wrappers antigos se existirem para evitar perda de nós do DOM
             const oldSidebarWrapper = body.querySelector('.cv-sidebar-wrapper');
             if(oldSidebarWrapper) {
                 body.innerHTML = '';
@@ -610,19 +583,28 @@
         function checkEmpty(type) {
             const container = document.getElementById(`repeater-${type}`);
             let empty = container.querySelector('.repeater-empty-state');
-            if(container.querySelectorAll('.repeater-item').length === 0) {
+            const totalItems = container.querySelectorAll('.repeater-item').length;
+            
+            if(totalItems === 0) {
                 if(!empty) {
                     empty = document.createElement('div'); empty.className = 'repeater-empty-state';
                     empty.innerText = 'Nenhum registro adicionado.'; container.appendChild(empty);
                 }
-            } else if(empty) { empty.remove(); }
+            } else if(empty) { 
+                empty.remove(); 
+            }
         }
 
         function addNewRepeaterItem(type, data = null) {
             const container = document.getElementById(`repeater-${type}`);
+            
+            // Remove o aviso de vazio antes de acrescentar o item
+            const empty = container.querySelector('.repeater-empty-state');
+            if(empty) empty.remove();
+
             const id = data ? data.id : `${type}-${Date.now()}`;
             const item = document.createElement('div');
-            item.className = 'repeater-item'; item.setAttribute('draggable', 'true'); item.setAttribute('id', id);
+            item.className = 'repeater-item'; item.setAttribute('id', id);
 
             let fields = '';
             if(type === 'experience') {
@@ -647,18 +629,19 @@
             }
 
             item.innerHTML = fields + `<div class="repeater-actions"><button class="btn btn-sec btn-danger" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="killRepeaterItem('${type}','${id}')">Remover</button></div>`;
-          // Evento input dispara a sincronização imediata letra por letra
-            item.querySelectorAll('.rf').forEach(i => {
+            
+            // Monitora inputs dinâmicos letra por letra
+                    item.querySelectorAll('.rf').forEach(i => {
                 i.addEventListener('input', () => syncCanvasStream(type));
             });
 
             container.appendChild(item);
-            checkEmpty(type);
             syncCanvasStream(type);
         }
 
         function killRepeaterItem(type, id) {
-            document.getElementById(id).remove();
+            const item = document.getElementById(id);
+            if(item) item.remove();
             checkEmpty(type); 
             syncCanvasStream(type);
         }
@@ -689,28 +672,10 @@
             appState[type] = payload; save();
         }
 
-        function setupDragDropEngine() {
-            document.querySelectorAll('.repeater-list').forEach(list => {
-                list.addEventListener('dragstart', e => { if(e.target.classList.contains('repeater-item')) e.target.classList.add('dragging'); });
-                list.addEventListener('dragend', e => {
-                    if(e.target.classList.contains('repeater-item')) {
-                        e.target.classList.remove('dragging');
-                        syncCanvasStream(list.id.replace('repeater-', ''));
-                    }
-                });
-                list.addEventListener('dragover', e => {
-                    e.preventDefault();
-                    const current = list.querySelector('.dragging');
-                    const cards = [...list.querySelectorAll('.repeater-item:not(.dragging)')];
-                    const next = cards.find(c => e.clientY <= c.getBoundingClientRect().top + c.getBoundingClientRect().height / 2);
-                    if(current) list.insertBefore(current, next);
-                });
-            });
-        }
-
         function switchTab(e, id) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.sidebar-tab-btn').forEach(b => b.classList.remove('active'));
+            
             document.getElementById(id).classList.add('active');
             e.currentTarget.classList.add('active');
         }
@@ -718,7 +683,6 @@
         async function exportPixelPerfectPDF() {
             showNotification("Compilando PDF de alta fidelidade...");
             const canvasElement = document.getElementById('cv-target');
-            
             canvasElement.classList.add('pdf-render-mode');
 
             const options = {
@@ -761,20 +725,15 @@
                 skills: document.getElementById('in-skills').value,
                 lang: document.getElementById('in-lang').value
             };
-            localStorage.setItem('saas_ultimate_cv_v3', JSON.stringify(appState));
+            localStorage.setItem('saas_ultimate_cv_v4', JSON.stringify(appState));
         }
 
         function loadApplicationState() {
-            const data = localStorage.getItem('saas_ultimate_cv_v3');
+            const data = localStorage.getItem('saas_ultimate_cv_v4');
             if(data) {
                 try {
                     appState = JSON.parse(data);
                     if(appState.theme) document.body.setAttribute('data-theme', appState.theme);
-                    if(appState.accent) {
-                        document.documentElement.style.setProperty('--accent', appState.accent);
-                        const targetDot = document.querySelector(`.color-dot[style*="${appState.accent}"]`);
-                        if(targetDot) targetDot.classList.add('active');
-                    }
                     if(appState.forms) {
                         document.getElementById('in-name').value = appState.forms.name || '';
                         document.getElementById('in-role').value = appState.forms.role || '';
@@ -785,14 +744,12 @@
                         document.getElementById('in-skills').value = appState.forms.skills || '';
                         document.getElementById('in-lang').value = appState.forms.lang || '';
                         
-                        // Atualiza binds textuais ordinários
                         document.querySelectorAll('.bind-val').forEach(i => {
                             const target = i.getAttribute('data-bind');
                             const el = document.getElementById(target);
                             if(el) el.innerText = i.value || '---';
                         });
 
-                        // Atualiza tags
                         document.querySelectorAll('.tags-input').forEach(i => {
                             const targetId = i.getAttribute('data-target');
                             const container = document.getElementById(targetId);
@@ -811,12 +768,14 @@
                         img.src = appState.photo; img.style.display = 'block';
                     }
                     
-                    // Renderiza as coleções dinâmicas estruturadas antes de mapear visibilidade
-                    if(appState.experience) appState.experience.forEach(x => addNewRepeaterItem('experience', x));
-                    if(appState.education) appState.education.forEach(x => addNewRepeaterItem('education', x));
-                    if(appState.projects) appState.projects.forEach(x => addNewRepeaterItem('projects', x));
+                    if(appState.experience && appState.experience.length) appState.experience.forEach(x => addNewRepeaterItem('experience', x));
+                    if(appState.education && appState.education.length) appState.education.forEach(x => addNewRepeaterItem('education', x));
+                    if(appState.projects && appState.projects.length) appState.projects.forEach(x => addNewRepeaterItem('projects', x));
                     
-                    ['experience', 'education', 'projects'].forEach(type => syncCanvasStream(type));
+                    ['experience', 'education', 'projects'].forEach(type => {
+                        syncCanvasStream(type);
+                        checkEmpty(type);
+                    });
 
                     if(appState.visibilities) {
                         Object.keys(appState.visibilities).forEach(key => {
@@ -829,18 +788,17 @@
                         document.getElementById('template-select').value = appState.template; 
                         applyTemplate(appState.template); 
                     }
-                } catch(err) { console.error("Erro na restauração de estado", err); }
+                } catch(err) { console.error("Erro na restauração", err); }
             } else {
-                const d = document.querySelector('.color-dot'); if(d) d.classList.add('active');
                 checkEmpty('experience'); checkEmpty('education'); checkEmpty('projects');
             }
         }
 
         function clearData() {
             if(confirm("Limpar permanentemente todas as alterações rascunhadas?")) {
-                localStorage.removeItem('saas_ultimate_cv_v3'); window.location.reload();
+                localStorage.removeItem('saas_ultimate_cv_v4'); window.location.reload();
             }
         }
     </script>
 </body>
-</html>
+</html> 
