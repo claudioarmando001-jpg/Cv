@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaaS Premium CV Builder Enterprise v4.1</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Motores de Renderização de PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-surface-secondary: #f1f5f9;
+            --text-main: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --accent: #2563eb; 
+            --accent-hover: #1d4ed8;
+            --border-color: #e2e8f0;
+            --radius-lg: 1rem;
+            --radius-md: 0.6rem;
+            --radius-sm: 0.375rem;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(226, 232, 240, 0.8);
+            --transition: all 0.2s ease;
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #020617;
+            --bg-surface: #0b1329;
+            --bg-surface-secondary: #1e293b;
+            --text-main: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-color: #1e293b;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 12px -1px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            --glass-bg: rgba(11, 19, 41, 0.85);
+            --glass-border: rgba(30, 41, 59, 0.6);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        /* --- NOTIFICAÇÕES E CARREGAMENTO --- */
+        #loader { position: fixed; inset: 0; background: var(--bg-main); z-index: 999999; display: flex; align-items: center; justify-content: center; transition: opacity 0.3s ease; }
+        .spinner { width: 40px; height: 40px; border: 3px solid var(--border-color); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 99999; display: flex; flex-direction: column; gap: 0.75rem; pointer-events: none; }
+        .toast { background: var(--bg-surface); color: var(--text-main); padding: 1rem 1.5rem; border-radius: var(--radius-md); box-shadow: var(--shadow-lg); border-left: 4px solid var(--accent); animation: slideIn 0.3s forwards; font-weight: 600; font-size: 0.85rem; border-top: 1px solid var(--border-color); }
+        @keyframes slideIn { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* --- BARRA TOP NAVIGATION --- */
+        header {
+            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100;
+            padding: 1rem 1.5rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;
+        }
+        .logo-area h1 { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.5px; }
+        .logo-area span { color: var(--accent); }
+        .header-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+
+        .theme-switch { background: var(--bg-surface-secondary); width: 42px; height: 22px; border-radius: 20px; cursor: pointer; position: relative; border: 1px solid var(--border-color); }
+        .theme-switch::before { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: var(--text-main); border-radius: 50%; transition: var(--transition); }
+        [data-theme="dark"] .theme-switch::before { transform: translateX(20px); background: var(--accent); }
+
+        .btn { background: var(--accent); color: white; border: none; padding: 0.6rem 1.15rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; text-decoration: none;}
+        .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn-sec { background: var(--bg-surface-secondary); color: var(--text-main); }
+        .btn-sec:hover { background: var(--border-color); }
+        .btn-danger { background: #fee2e2; color: #ef4444; }
+        .btn-danger:hover { background: #ef4444; color: white; }
+
+        /* --- CONTAINER DE TRABALHO GRID --- */
+        .app-container { display: grid; grid-template-columns: 1fr; min-height: calc(100vh - 70px); }
+        @media (min-width: 1024px) { .app-container { grid-template-columns: 80px 420px 1fr; } }
+
+        /* BARRA LATERAL DE SEÇÕES */
+        .sections-sidebar {
+            background: #0f172a; display: flex; flex-direction: row; justify-content: space-around;
+            padding: 0.5rem; gap: 0.5rem; border-right: 1px solid rgba(255,255,255,0.05); z-index: 30;
+        }
+        @media (min-width: 1024px) {
+            .sections-sidebar { flex-direction: column; justify-content: flex-start; padding: 1.5rem 0.5rem; }
+        }
+        .sidebar-tab-btn {
+            background: transparent; border: none; color: #94a3b8; padding: 0.75rem;
+            border-radius: var(--radius-md); cursor: pointer; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 0.25rem; font-size: 0.7rem;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; flex: 1;
+            transition: var(--transition); border: 1px solid transparent;
+        }
+        @media (min-width: 1024px) { .sidebar-tab-btn { flex: none; width: 100%; height: 70px; } }
+        .sidebar-tab-btn:hover { color: #f8fafc; background: rgba(255,255,255,0.05); }
+        .sidebar-tab-btn.active {
+            color: #ffffff; background: var(--accent); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        /* PAINEL DE FORMULÁRIOS */
+        .control-panel { padding: 1.5rem; border-right: 1px solid var(--border-color); background: var(--bg-surface); max-height: calc(100vh - 70px); overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeInForm 0.2s ease-in-out; }
+        @keyframes fadeInForm { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* INTERRUPTORES GLOBAIS DE EXCLUSÃO */
+        .section-header-toggle { display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 1rem; }
+        .section-header-toggle h3 { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .inline-toggle-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; }
+
+        .switch-control { position: relative; display: inline-block; width: 36px; height: 20px; }
+        .switch-control input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background-color: var(--border-color); transition: .2s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .2s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(16px); }
+
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; }
+        .form-control { width: 100%; padding: 0.6rem 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-family: inherit; font-size: 0.85rem; transition: var(--transition); }
+        .form-control:focus { outline: none; border-color: var(--accent); background: var(--bg-surface); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        textarea.form-control { resize: vertical; min-height: 65px; }
+
+        /* LISTAS DINÂMICAS REPEATER */
+        .repeater-list { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
+        .repeater-item { background: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; position: relative; }
+        .repeater-empty-state { text-align: center; padding: 1.5rem 1rem; border: 1px dashed var(--border-color); border-radius: var(--radius-md); color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem; }
+        .repeater-actions { display: flex; justify-content: flex-end; margin-top: 0.5rem; border-top: 1px dashed var(--border-color); padding-top: 0.5rem; }
+        .tags-output-container { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
+        .visual-tag { background: var(--accent); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+
+        /* PAINEL DE PRÉ-VISUALIZAÇÃO (DIREITA) */
+        .preview-panel { background: #cbd5e1; padding: 1.5rem 1rem; display: flex; justify-content: center; align-items: flex-start; overflow-y: auto; max-height: calc(100vh - 70px); }
+        [data-theme="dark"] .preview-panel { background: #020617; background-image: radial-gradient(var(--border-color) 1px, transparent 1px); background-size: 20px 20px; }
+        .preview-sticky { position: sticky; top: 0; width: 100%; max-width: 210mm; display: flex; flex-direction: column; gap: 1rem; }
+
+        .template-selector { background: var(--bg-surface); padding: 0.75rem 1rem; border-radius: var(--radius-md); box-shadow: var(--shadow-md); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+        .template-selector label { font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; }
+        .select-wrapper { flex: 1; }
+        .select-wrapper select { width: 100%; padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 600; font-size: 0.8rem; outline: none; }
+
+        /* ==========================================================================
+           MODAL DE COMPARTILHAMENTO (NOVO REQUISITO)
+           ========================================================================== */
+        .share-modal-backdrop {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+            z-index: 999999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .share-modal-backdrop.open { opacity: 1; pointer-events: all; }
+        .share-modal {
+            background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg);
+            padding: 2rem; max-width: 480px; width: 90%; box-shadow: var(--shadow-lg); transform: translateY(20px); transition: transform 0.3s ease;
+        }
+        .share-modal-backdrop.open .share-modal { transform: translateY(0); }
+        .share-modal h2 { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .share-modal p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.4; }
+        .share-buttons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem; }
+        .btn-share-opt { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-main); font-weight: 600; font-size: 0.8rem; cursor: pointer; color: var(--text-main); transition: var(--transition); }
+        .btn-share-opt:hover { background: var(--bg-surface-secondary); border-color: var(--text-muted); }
+        .share-divider { height: 1px; background: var(--border-color); margin: 1.25rem 0; position: relative; }
+        .share-footer-actions { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+
+        /* ==========================================================================
+           CANVAS ENGINE CORE (DOCUMENTO A4 RENDER)
+           ========================================================================== */
+        .cv-canvas {
+            background: #ffffff; color: #1e293b; width: 100%; min-height: 296mm; padding: 18mm 16mm;
+            box-shadow: var(--shadow-lg); box-sizing: border-box; font-size: 13px; line-height: 1.5;
+            position: relative; overflow: hidden; display: flex; flex-direction: column;
+        }
+
+        .cv-section { margin-bottom: 1.25rem; }
+        .cv-section-title { font-size: 0.95rem; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.15rem; margin-bottom: 0.6rem; color: #0f172a; letter-spacing: 0.5px; }
+        .cv-header { margin-bottom: 1.25rem; display: flex; gap: 1.25rem; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; }
+        .cv-photo { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; display: none; }
+        .cv-name { font-size: 1.75rem; font-weight: 800; color: #0f172a; line-height: 1.1; letter-spacing: -0.5px; }
+        .cv-role { font-size: 0.9rem; font-weight: 600; color: var(--accent); margin-top: 0.15rem; }
+        .cv-meta { display: flex; flex-wrap: wrap; gap: 0.75rem; font-size: 0.75rem; color: #475569; margin-top: 0.35rem; }
+        .cv-grid-item { margin-bottom: 0.75rem; }
+        .cv-item-header { display: flex; justify-content: space-between; font-weight: 700; color: #0f172a; font-size: 0.85rem; }
+        .cv-item-sub { font-style: italic; color: #475569; font-size: 0.8rem; margin-bottom: 0.15rem; }
+        .cv-tags-list { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+        .cv-tag { background: #f1f5f9; color: #334155; padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.75rem; font-weight: 500; }
+        .cv-text-block { white-space: pre-line; color: #334155; font-size: 0.825rem; }
+        .cv-body-content { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
+
+        #cv-main-stream { display: flex; flex-direction: column; gap: 1rem; }
+        #cv-sidebar-stream { display: flex; flex-direction: column; gap: 1rem; }
+
+        /* --- CATALOGO DE TEMPLATES EXISTENTES --- */
+        .cv-canvas.tmpl-executivo { font-family: 'Georgia', serif; }
+        .cv-canvas.tmpl-executivo .cv-section-title { border-bottom-color: var(--accent); color: var(--accent); }
+
+        .cv-canvas.tmpl-minimalista { padding: 20mm; }
+        .cv-canvas.tmpl-minimalista .cv-section-title { border-bottom: none; font-weight: 600; position:relative; }
+        .cv-canvas.tmpl-minimalista .cv-section-title::after { content: ''; position: absolute; bottom: 0; left: 0; width: 20px; height: 2px; background: #000; }
+
+        .cv-canvas.tmpl-criativo .cv-body-content { display: grid; grid-template-columns: 1fr 1.8fr; gap: 1.25rem; }
+        .cv-canvas.tmpl-criativo .cv-sidebar-wrapper { background: #f8fafc; padding: 4mm; border-right: 1px solid #e2e8f0; }
+
+        .cv-canvas.tmpl-corporativo { padding: 0; }
+        .cv-canvas.tmpl-corporativo .cv-header { background: #0f172a; color: white; padding: 12mm 16mm; margin-bottom: 1.25rem; border: none; }
+        .cv-canvas.tmpl-corporativo .cv-header .cv-name { color: white; }
+        .cv-canvas.tmpl-corporativo .cv-header .cv-meta { color: #94a3b8; }
+        .cv-canvas.tmpl-corporativo .cv-body-content { padding: 0 16mm 16mm 16mm; }
+
+        .cv-canvas.tmpl-escuro-premium { background: #0f172a; color: #f8fafc; }
+        .cv-canvas.tmpl-escuro-premium .cv-name, .cv-canvas.tmpl-escuro-premium .cv-item-header { color: #ffffff; }
+        .cv-canvas.tmpl-escuro-premium .cv-meta, .cv-canvas.tmpl-escuro-premium .cv-item-sub, .cv-canvas.tmpl-escuro-premium .cv-text-block { color: #cbd5e1; }
+        .cv-canvas.tmpl-escuro-premium .cv-section-title { border-bottom-color: var(--accent); color: var(--accent); }
+        .cv-canvas.tmpl-escuro-premium .cv-tag { background: #1e293b; color: #f8fafc; }
+
+        /* --- NOVOS TEMPLATES ADICIONADOS (MAIS TEMPLATES) --- */
+        /* 6. Tech Modernist (Estilo Engenharia/Desenvolvedor Compacto) */
+        .cv-canvas.tmpl-tech { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+        .cv-canvas.tmpl-tech .cv-name { font-size: 1.5rem; font-weight: 700; color: #0284c7; }
+        .cv-canvas.tmpl-tech .cv-section-title { border-bottom: 1px dashed #0284c7; color: #0284c7; font-size: 0.85rem; }
+        .cv-canvas.tmpl-tech .cv-tag { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-family: inherit; }
+
+        /* 7. Elegant Academic (Tipografia Avançada / Artes / Humanas) */
+        .cv-canvas.tmpl-academic { font-family: 'Playfair Display', serif; padding: 22mm 20mm; }
+        .cv-canvas.tmpl-academic .cv-header { flex-direction: column; text-align: center; border-bottom: 2px double #1e293b; }
+        .cv-canvas.tmpl-academic .cv-name { font-size: 2rem; font-weight: 400; font-style: italic; }
+        .cv-canvas.tmpl-academic .cv-meta { justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .cv-canvas.tmpl-academic .cv-section-title { border-bottom: 1px solid #1e293b; text-align: center; font-weight: 400; font-size: 1rem; letter-spacing: 2px; }
+
+        .pdf-render-mode { width: 210mm !important; min-height: 297mm !important; max-width: 210mm !important; position: absolute !important; left: 0 !important; top: 0 !important; z-index: -99999 !important; background: #ffffff !important; transform: none !important; }
+    </style>
+</head>
+<body data-theme="light">
+
+    <div id="loader"><div class="spinner"></div></div>
+    <div id="toast-container"></div>
+
+    <!-- MODAL DE COMPARTILHAMENTO ANTES DE SALVAR -->
+      <div id="share-modal" class="share-modal-backdrop">
+        <div class="share-modal">
+            <h2>Compartilhe a nossa Plataforma!</h2>
+            <p>Ajude outros profissionais a construírem currículos incríveis. Compartilhe o link do SaaS CV Builder antes de exportar o seu documento definitivo.</p>
+            
+            <div class="share-buttons-grid">
+                <button class="btn-share-opt" onclick="nativeShare()">⚡ Compartilhar Link</button>
+                <a class="btn-share-opt" id="share-wa" href="#" target="_blank">💬 WhatsApp</a>
+                <a class="btn-share-opt" id="share-li" href="#" target="_blank">💼 LinkedIn</a>
+                <button class="btn-share-opt" onclick="copyPlatformLink()">🔗 Copiar Link</button>
+            </div>
+
+            <div class="share-divider"></div>
+
+            <div class="share-footer-actions">
+                <button class="btn btn-sec" onclick="closeShareModal()">Voltar e Editar</button>
+                <button class="btn" style="background:#10b981;" onclick="triggerPDFGeneration()">Ignorar e Baixar PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <div class="logo-area">
+            <h1>SaaS Builder <span>Enterprise v4.1</span></h1>
+        </div>
+        <div class="header-actions">
+            <div class="theme-switch" id="theme-toggle"></div>
+            <button class="btn btn-sec btn-danger" onclick="clearData()">Resetar Tudo</button>
+            <button class="btn" onclick="openShareModal()">Exportar PDF</button>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <!-- BARRA LATERAL DA ESQUERDA -->
+        <aside class="sections-sidebar">
+            <button class="sidebar-tab-btn active" onclick="switchTab(event, 'tab-dados')"><span>Dados</span></button>
+            <button class="sidebar-tab-btn" onclick="switchTab(event, 'tab-experiencia')"><span>Carreira</span></button>
+            <button class="sidebar-tab-btn" onclick="switchTab(event, 'tab-educacao')"><span>Estudos</span></button>
+            <button class="sidebar-tab-btn" onclick="switchTab(event, 'tab-projetos')"><span>Projetos</span></button>
+            <button class="sidebar-tab-btn" onclick="switchTab(event, 'tab-skills')"><span>Skills</span></button>
+        </aside>
+
+        <!-- PAINEL CONTEÚDO DOS FORMULÁRIOS -->
+        <main class="control-panel">
+            <!-- TAB: DADOS -->
+            <div id="tab-dados" class="tab-content active">
+                <div class="section-header-toggle">
+                    <h3>Cabeçalho Principal</h3>
+                    <label class="switch-control">
+                        <input type="checkbox" id="tg-header" data-section="section-cv-header" checked onchange="toggleSection(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <div class="inline-toggle-row">
+                        <label>Foto de Perfil</label>
+                        <label class="switch-control"><input type="checkbox" id="tg-photo" data-section="cv-photo" checked onchange="toggleSection(this)"><span class="slider"></span></label>
+                    </div>
+                    <input type="file" class="form-control" id="in-photo" accept="image/*" onchange="uploadPhoto(this)">
+                </div>
+
+                <div class="form-group">
+                    <div class="inline-toggle-row">
+                        <label>Nome do Candidato</label>
+                        <label class="switch-control"><input type="checkbox" id="tg-name" data-section="cv-name" checked onchange="toggleSection(this)"><span class="slider"></span></label>
+                    </div>
+                    <input type="text" class="form-control bind-val" data-bind="cv-name" id="in-name" placeholder="Ex: Claudio Armando">
+                </div>
+
+                <div class="form-group">
+                    <div class="inline-toggle-row">
+                        <label>Cargo / Título Executivo</label>
+                        <label class="switch-control"><input type="checkbox" id="tg-role" data-section="cv-role" checked onchange="toggleSection(this)"><span class="slider"></span></label>
+                    </div>
+                    <input type="text" class="form-control bind-val" data-bind="cv-role" id="in-role" placeholder="Ex: Desenvolvedor Front-end Senior">
+                </div>
+
+                <div class="row-grid">
+                    <div class="form-group">
+                        <div class="inline-toggle-row">
+                            <label>E-mail</label>
+                            <label class="switch-control"><input type="checkbox" id="tg-email" data-section="cv-email" checked onchange="toggleSection(this)"><span class="slider"></span></label>
+                        </div>
+                        <input type="email" class="form-control bind-val" data-bind="cv-email" id="in-email">
+                    </div>
+                    <div class="form-group">
+                        <div class="inline-toggle-row">
+                            <label>Telefone</label>
+                            <label class="switch-control"><input type="checkbox" id="tg-phone" data-section="cv-phone" checked onchange="toggleSection(this)"><span class="slider"></span></label>
+                        </div>
+                        <input type="text" class="form-control bind-val" data-bind="cv-phone" id="in-phone">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="inline-toggle-row">
+                        <label>Localização</label>
+                        <label class="switch-control"><input type="checkbox" id="tg-location" data-section="cv-location" checked onchange="toggleSection(this)"><span class="slider"></span></label>
+                    </div>
+                    <input type="text" class="form-control bind-val" data-bind="cv-location" id="in-location">
+                </div>
+
+                <div class="section-header-toggle" style="margin-top:1.5rem;">
+                    <h3>Sobre Mim / Sumário</h3>
+                    <label class="switch-control">
+                        <input type="checkbox" id="tg-about" data-section="section-cv-about" checked onchange="toggleSection(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <textarea class="form-control bind-val" data-bind="cv-about-text" id="in-about" rows="3"></textarea>
+                </div>
+            </div>
+    <!-- TAB: EXPERIÊNCIA -->
+            <div id="tab-experiencia" class="tab-content">
+                <div class="section-header-toggle">
+                    <h3>Experiência Profissional</h3>
+                    <label class="switch-control">
+                        <input type="checkbox" id="tg-exp" data-section="section-cv-exp" checked onchange="toggleSection(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div id="repeater-experience" class="repeater-list"></div>
+                <button class="btn btn-sec" style="width:100%; margin-top:0.5rem;" onclick="addNewRepeaterItem('experience')">+ Adicionar Novo Bloco de Carreira</button>
+            </div>
+
+            <!-- TAB: EDUCAÇÃO -->
+            <div id="tab-educacao" class="tab-content">
+                <div class="section-header-toggle">
+                    <h3>Formação Académica</h3>
+                    <label class="switch-control">
+                        <input type="checkbox" id="tg-edu" data-section="section-cv-edu" checked onchange="toggleSection(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div id="repeater-education" class="repeater-list"></div>
+                <button class="btn btn-sec" style="width:100%; margin-top:0.5rem;" onclick="addNewRepeaterItem('education')">+ Adicionar Nova Formação</button>
+            </div>
+
+            <!-- TAB: PROJETOS -->
+            <div id="tab-projetos" class="tab-content">
+                <div class="section-header-toggle">
+                    <h3>Projetos Realizados</h3>
+                    <label class="switch-control">
+                        <input type="checkbox" id="tg-proj" data-section="section-cv-proj" checked onchange="toggleSection(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div id="repeater-projects" class="repeater-list"></div>
+                <button class="btn btn-sec" style="width:100%; margin-top:0.5rem;" onclick="addNewRepeaterItem('projects')">+ Adicionar Novo Projeto</button>
+            </div>
+
+            <!-- TAB: SKILLS -->
+            <div id="tab-skills" class="tab-content">
+                <div class="section-header-toggle">
+                    <h3>Habilidades</h3>
+                    <label class="switch-control">
+                        <input type="checkbox" id="tg-skills" data-section="section-cv-skills" checked onchange="toggleSection(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control tags-input" data-target="cv-skills-list" id="in-skills" placeholder="Separe as habilidades por vírgulas">
+                    <div class="tags-output-container" id="preview-tags-skills"></div>
+                </div>
+
+                <div class="section-header-toggle" style="margin-top:1.5rem;">
+                    <h3>Idiomas</h3>
+                    <label class="switch-control">
+                        <input type="checkbox" id="tg-lang" data-section="section-cv-lang" checked onchange="toggleSection(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control tags-input" data-target="cv-lang-list" id="in-lang" placeholder="Separe os idiomas por vírgulas">
+                    <div class="tags-output-container" id="preview-tags-lang"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- PRÉ-VISUALIZAÇÃO (DIREITA) -->
+        <aside class="preview-panel">
+            <div class="preview-sticky">
+                <div class="template-selector">
+                    <label>Design do Template</label>
+                    <div class="select-wrapper">
+                        <select id="template-select" onchange="applyTemplate(this.value)">
+                            <option value="tmpl-executivo">1. Modelo Executivo (Corporate Alpha)</option>
+                            <option value="tmpl-minimalista">2. Modelo Minimalista (Clean Space)</option>
+                            <option value="tmpl-criativo">3. Modelo Criativo (Assimétrico Splitted)</option>
+                            <option value="tmpl-corporativo">4. Modelo Corporativo (Solid Header)</option>
+                            <option value="tmpl-escuro-premium">5. Modelo Escuro Premium (Luxury Midnight)</option>
+                            <option value="tmpl-tech">6. Modelo Tech Modernist (JetBrains Code)</option>
+                            <option value="tmpl-academic">7. Modelo Elegant Academic (Playfair Deluxe)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- TARGET CANVAS -->
+                <div id="cv-target" class="cv-canvas tmpl-executivo">
+                    <div class="cv-header" id="section-cv-header">
+                        <img src="" id="cv-photo" class="cv-photo">
+                        <div style="flex:1;">
+                            <h2 class="cv-name" id="cv-name">Seu Nome Completo</h2>
+                            <p class="cv-role" id="cv-role">Título Profissional</p>
+                            <div class="cv-meta">
+                                <span id="cv-email">email@dominio.com</span>
+                                <span id="cv-phone">+258 840000000</span>
+                                <span id="cv-location">Moçambique</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cv-body-content" id="cv-body-content-root">
+                        <div class="cv-section" id="section-cv-about">
+                            <h4 class="cv-section-title">Resumo Profissional</h4>
+                            <p id="cv-about-text" class="cv-text-block">Descrição de perfil...</p>
+                        </div>
+
+                        <div id="cv-main-stream">
+                            <div class="cv-section" id="section-cv-exp">
+                                <h4 class="cv-section-title">Experiência Profissional</h4>
+                                <div id="cv-render-experience"></div>
+                            </div>
+                            <div class="cv-section" id="section-cv-edu">
+                                <h4 class="cv-section-title">Formação Acadêmica</h4>
+                                <div id="cv-render-education"></div>
+                            </div>
+                            <div class="cv-section" id="section-cv-proj">
+                                <h4 class="cv-section-title">Projetos</h4>
+                                <div id="cv-render-projects"></div>
+                            </div>
+                        </div>
+
+                        <div id="cv-sidebar-stream">
+                            <div class="cv-section" id="section-cv-skills">
+                                <h4 class="cv-section-title">Habilidades</h4>
+                                <div class="cv-tags-list" id="cv-skills-list"></div>
+                            </div>
+                            <div class="cv-section" id="section-cv-lang">
+                                <h4 class="cv-section-title">Idiomas</h4>
+                                <div class="cv-tags-list" id="cv-lang-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        let appState = {
+            theme: 'light', template: 'tmpl-executivo',
+            visibilities: {}, experience: [], education: [], projects: [], photo: ""
+        };
+
+        const platformUrl = window.location.href.split('#')[0];
+        const shareText = "Montei meu currículo de alta qualidade neste construtor premium. Experimente também!";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            initSystem();
+            loadApplicationState();
+            setupInteractions();
+            setupShareUrls();
+
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                loader.style.opacity = 0;
+                setTimeout(() => loader.style.display = 'none', 300);
+            }, 400);
+        });
+
+        function showNotification(msg) {
+            const container = document.getElementById('toast-container');
+            const item = document.createElement('div');
+            item.className = 'toast'; item.innerText = msg;
+            container.appendChild(item);
+            setTimeout(() => item.remove(), 3000);
+        }
+
+        function initSystem() {
+            document.getElementById('theme-toggle').addEventListener('click', () => {
+                const isDark = document.body.getAttribute('data-theme') === 'dark';
+                const next = isDark ? 'light' : 'dark';
+                document.body.setAttribute('data-theme', next);
+                appState.theme = next; save();
+            });
+        }
+
+        /* --- CONTROLE DA MODAL DE COMPARTILHAMENTO --- */
+        function openShareModal() {
+            document.getElementById('share-modal').classList.add('open');
+        }
+
+        function closeShareModal() {
+            document.getElementById('share-modal').classList.remove('open');
+        }
+
+        function setupShareUrls() {
+            document.getElementById('share-wa').href = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + " " + platformUrl)}`;
+            document.getElementById('share-li').href = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(platformUrl)}`;
+        }
+
+        async function nativeShare() {
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'SaaS Premium CV Builder',
+                        text: shareText,
+                        url: platformUrl,
+                    });
+                    showNotification("Obrigado por compartilhar!");
+                } catch (err) {
+                    console.log("Compartilhamento cancelado ou não suportado.");
+                }
+            } else {
+                showNotification("Compartilhamento nativo indisponível. Use as opções diretas!");
+            }
+        }
+
+        function copyPlatformLink() {
+            navigator.clipboard.writeText(platformUrl).then(() => {
+                showNotification("Link copiado para a área de transferência!");
+            });
+        }
+
+        function triggerPDFGeneration() {
+            closeShareModal();
+            exportPixelPerfectPDF();
+        }
+
+        function setupInteractions() {
+            document.querySelectorAll('.bind-val').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const target = e.target.getAttribute('data-bind');
+                    const element = document.getElementById(target);
+                    if(element) element.innerText = e.target.value || '---';
+                    save();
+                });
+            });
+
+            document.querySelectorAll('.tags-input').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const targetId = e.target.getAttribute('data-target');
+                    const container = document.getElementById(targetId);
+                    const isSkills = e.target.id === 'in-skills';
+                    const pContainer = isSkills ? document.getElementById('preview-tags-skills') : document.getElementById('preview-tags-lang');
+
+                    container.innerHTML = ''; pContainer.innerHTML = '';
+                    if(!e.target.value.trim()) return;
+
+                    e.target.value.split(',').map(t => t.trim()).filter(Boolean).forEach(tag => {
+                        const s1 = document.createElement('span'); s1.className = 'cv-tag'; s1.innerText = tag; container.appendChild(s1);
+                        const s2 = document.createElement('span'); s2.className = 'visual-tag'; s2.innerText = tag; pContainer.appendChild(s2);
+                    });
+                    save();
+                });
+            });
+        }
+
+        function uploadPhoto(input) {
+            if(input.files && input.files[0]) {
+                const r = new FileReader();
+                r.onload = function(e) {
+                    const img = document.getElementById('cv-photo');
+                    img.src = e.target.result;
+                    if(document.getElementById('tg-photo').checked) img.style.display = 'block';
+                    appState.photo = e.target.result; save();
+                };
+                r.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function toggleSection(switchEl) {
+            const target = switchEl.getAttribute('data-section');
+            const el = document.getElementById(target);
+            if(el) {
+                if(target === 'cv-photo') {
+                    el.style.display = (switchEl.checked && appState.photo) ? 'block' : 'none';
+                } else {
+                    el.style.display = switchEl.checked ? '' : 'none';
+                }
+                appState.visibilities[target] = switchEl.checked;
+            }
+            save();
+        }
+
+        function applyTemplate(tmplName) {
+            const canvas = document.getElementById('cv-target');
+            canvas.className = 'cv-canvas ' + tmplName;
+            appState.template = tmplName; save();
+
+            const body = document.getElementById('cv-body-content-root');
+            const main = document.getElementById('cv-main-stream');
+            const side = document.getElementById('cv-sidebar-stream');
+            const about = document.getElementById('section-cv-about');
+
+            const oldSidebarWrapper = body.querySelector('.cv-sidebar-wrapper');
+            if(oldSidebarWrapper) {
+                body.innerHTML = '';
+                body.appendChild(about);
+                body.appendChild(main);
+                body.appendChild(side);
+            }
+
+            if(tmplName === 'tmpl-criativo') {
+                body.innerHTML = '';
+                const sideWrapper = document.createElement('div');
+                sideWrapper.className = 'cv-sidebar-wrapper';
+                sideWrapper.appendChild(side);
+
+                const mainWrapper = document.createElement('div');
+                mainWrapper.className = 'cv-mainbar-wrapper';
+                mainWrapper.appendChild(about);
+                mainWrapper.appendChild(main);
+
+                body.appendChild(sideWrapper);
+                body.appendChild(mainWrapper);
+            }
+        }
+       function checkEmpty(type) {
+            const container = document.getElementById(`repeater-${type}`);
+            let empty = container.querySelector('.repeater-empty-state');
+            const totalItems = container.querySelectorAll('.repeater-item').length;
+
+            if(totalItems === 0) {
+                if(!empty) {
+                    empty = document.createElement('div'); empty.className = 'repeater-empty-state';
+                    empty.innerText = 'Nenhum registro adicionado.'; container.appendChild(empty);
+                }
+            } else if(empty) { 
+                empty.remove(); 
+            }
+        }
+
+        function addNewRepeaterItem(type, data = null) {
+            const container = document.getElementById(`repeater-${type}`);
+
+            const empty = container.querySelector('.repeater-empty-state');
+            if(empty) empty.remove();
+
+            const id = data ? data.id : `${type}-${Date.now()}`;
+            const item = document.createElement('div');
+            item.className = 'repeater-item'; item.setAttribute('id', id);
+
+            let fields = '';
+            if(type === 'experience') {
+                fields = `
+                    <div class="form-group"><label>Empresa</label><input type="text" class="form-control rf" data-f="company" value="${data?data.company:''}"></div>
+                    <div class="form-group"><label>Função</label><input type="text" class="form-control rf" data-f="role" value="${data?data.role:''}"></div>
+                    <div class="form-group"><label>Período</label><input type="text" class="form-control rf" data-f="period" value="${data?data.period:''}"></div>
+                    <div class="form-group"><label>Atividades</label><textarea class="form-control rf" data-f="desc" rows="2">${data?data.desc:''}</textarea></div>
+                `;
+            } else if(type === 'education') {
+                fields = `
+                    <div class="form-group"><label>Instituição</label><input type="text" class="form-control rf" data-f="inst" value="${data?data.inst:''}"></div>
+                    <div class="form-group"><label>Curso</label><input type="text" class="form-control rf" data-f="degree" value="${data?data.degree:''}"></div>
+                    <div class="form-group"><label>Período</label><input type="text" class="form-control rf" data-f="period" value="${data?data.period:''}"></div>
+                `;
+            } else if(type === 'projects') {
+                fields = `
+                    <div class="form-group"><label>Nome do Projeto</label><input type="text" class="form-control rf" data-f="title" value="${data?data.title:''}"></div>
+                    <div class="form-group"><label>Link</label><input type="text" class="form-control rf" data-f="link" value="${data?data.link:''}"></div>
+                    <div class="form-group"><label>Descrição</label><textarea class="form-control rf" data-f="desc" rows="2">${data?data.desc:''}</textarea></div>
+                `;
+            }
+
+            item.innerHTML = fields + `<div class="repeater-actions"><button class="btn btn-sec btn-danger" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="killRepeaterItem('${type}','${id}')">Remover</button></div>`;
+
+            item.querySelectorAll('.rf').forEach(i => {
+                i.addEventListener('input', () => syncCanvasStream(type));
+            });
+
+            container.appendChild(item);
+            syncCanvasStream(type);
+        }
+
+        function killRepeaterItem(type, id) {
+            const item = document.getElementById(id);
+            if(item) item.remove();
+            checkEmpty(type); 
+            syncCanvasStream(type);
+        }
+
+        function syncCanvasStream(type) {
+            const list = document.getElementById(`repeater-${type}`);
+            const render = document.getElementById(`cv-render-${type}`);
+            if(!render) return;
+
+            render.innerHTML = '';
+            let payload = [];
+
+            list.querySelectorAll('.repeater-item').forEach(item => {
+                let chunk = { id: item.id };
+                item.querySelectorAll('.rf').forEach(i => chunk[i.getAttribute('data-f')] = i.value);
+                payload.push(chunk);
+
+                const node = document.createElement('div'); node.className = 'cv-grid-item';
+                if(type === 'experience') {
+                    node.innerHTML = `<div class="cv-item-header"><span>${chunk.company || '---'}</span><span>${chunk.period || ''}</span></div><div class="cv-item-sub">${chunk.role || ''}</div><p class="cv-text-block">${chunk.desc || ''}</p>`;
+                } else if(type === 'education') {
+                    node.innerHTML = `<div class="cv-item-header"><span>${chunk.inst || '---'}</span><span>${chunk.period || ''}</span></div><div class="cv-item-sub">${chunk.degree || ''}</div>`;
+                } else if(type === 'projects') {
+                    node.innerHTML = `<div class="cv-item-header"><span>${chunk.title || '---'}</span><span style="color:var(--accent); font-size:0.75rem;">${chunk.link || ''}</span></div><p class="cv-text-block">${chunk.desc || ''}</p>`;
+                }
+                render.appendChild(node);
+            });
+            appState[type] = payload; save();
+        }
+
+        function switchTab(e, id) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.sidebar-tab-btn').forEach(b => b.classList.remove('active'));
+
+            document.getElementById(id).classList.add('active');
+            e.currentTarget.classList.add('active');
+        }
+
+        async function exportPixelPerfectPDF() {
+            showNotification("Compilando PDF de alta fidelidade...");
+            const canvasElement = document.getElementById('cv-target');
+            canvasElement.classList.add('pdf-render-mode');
+
+            const options = {
+                scale: 3.0, 
+                useCORS: true,
+                logging: false,
+                allowTaint: true,
+                backgroundColor: "#ffffff"
+            };
+
+            try {
+                const canvas = await html2canvas(canvasElement, options);
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+                pdf.save('Curriculum_Vitae_Enterprise.pdf');
+                showNotification("Documento exportado com sucesso!");
+            } catch (error) {
+                console.error(error);
+                showNotification("Erro na geração do PDF.");
+            } finally {
+                canvasElement.classList.remove('pdf-render-mode');
+            }
+        }
+
+        function save() {
+            appState.forms = {
+                name: document.getElementById('in-name').value,
+                role: document.getElementById('in-role').value,
+                email: document.getElementById('in-email').value,
+                phone: document.getElementById('in-phone').value,
+                location: document.getElementById('in-location').value,
+                about: document.getElementById('in-about').value,
+                skills: document.getElementById('in-skills').value,
+                lang: document.getElementById('in-lang').value
+            };
+            localStorage.setItem('saas_ultimate_cv_v4', JSON.stringify(appState));
+        }
+
+        function loadApplicationState() {
+            const data = localStorage.getItem('saas_ultimate_cv_v4');
+            if(data) {
+                try {
+                    appState = JSON.parse(data);
+                    if(appState.theme) document.body.setAttribute('data-theme', appState.theme);
+                    if(appState.forms) {
+                        document.getElementById('in-name').value = appState.forms.name || '';
+                        document.getElementById('in-role').value = appState.forms.role || '';
+                        document.getElementById('in-email').value = appState.forms.email || '';
+                        document.getElementById('in-phone').value = appState.forms.phone || '';
+                        document.getElementById('in-location').value = appState.forms.location || '';
+                        document.getElementById('in-about').value = appState.forms.about || '';
+                        document.getElementById('in-skills').value = appState.forms.skills || '';
+                        document.getElementById('in-lang').value = appState.forms.lang || '';
+
+                        document.querySelectorAll('.bind-val').forEach(i => {
+                            const target = i.getAttribute('data-bind');
+                            const el = document.getElementById(target);
+                            if(el) el.innerText = i.value || '---';
+                        });
+
+                        document.querySelectorAll('.tags-input').forEach(i => {
+                            const targetId = i.getAttribute('data-target');
+                            const container = document.getElementById(targetId);
+                            const pContainer = i.id === 'in-skills' ? document.getElementById('preview-tags-skills') : document.getElementById('preview-tags-lang');
+                            if(container && i.value) {
+                                container.innerHTML = ''; pContainer.innerHTML = '';
+                                i.value.split(',').map(t => t.trim()).filter(Boolean).forEach(tag => {
+                                    const s1 = document.createElement('span'); s1.className = 'cv-tag'; s1.innerText = tag; container.appendChild(s1);
+                                    const s2 = document.createElement('span'); s2.className = 'visual-tag'; s2.innerText = tag; pContainer.appendChild(s2);
+                                });
+                            }
+                        });
+                    }
+                    if(appState.photo) {
+                        const img = document.getElementById('cv-photo');
+                        img.src = appState.photo; img.style.display = 'block';
+                    }
+
+                    if(appState.experience && appState.experience.length) appState.experience.forEach(x => addNewRepeaterItem('experience', x));
+                    if(appState.education && appState.education.length) appState.education.forEach(x => addNewRepeaterItem('education', x));
+                    if(appState.projects && appState.projects.length) appState.projects.forEach(x => addNewRepeaterItem('projects', x));
+
+                    ['experience', 'education', 'projects'].forEach(type => {
+                        syncCanvasStream(type);
+                        checkEmpty(type);
+                    });
+
+                    if(appState.visibilities) {
+                        Object.keys(appState.visibilities).forEach(key => {
+                            const sw = document.querySelector(`input[data-section="${key}"]`);
+                            if(sw) { sw.checked = appState.visibilities[key]; toggleSection(sw); }
+                        });
+                    }
+
+                    if(appState.template) { 
+                        document.getElementById('template-select').value = appState.template; 
+                        applyTemplate(appState.template); 
+                    }
+                } catch(err) { console.error("Erro na restauração", err); }
+            } else {
+                checkEmpty('experience'); checkEmpty('education'); checkEmpty('projects');
+            }
+        }
+
+        function clearData() {
+            if(confirm("Limpar permanentemente todas as alterações rascunhadas?")) {
+                localStorage.removeItem('saas_ultimate_cv_v4'); window.location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
