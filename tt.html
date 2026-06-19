@@ -52,6 +52,10 @@
         .article-content { padding: 20px; max-width: 800px; margin: 0 auto; }
         .article-img { width: 100%; border-radius: 20px; margin: 15px 0; }
         
+        /* Botão de Copiar Artigo */
+        .btn-copy { display: inline-flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; margin-bottom: 15px; transition: all 0.2s; }
+        .btn-copy.copied { background: #10b981; color: white; border-color: #10b981; }
+
         .loader-bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); z-index: 10000; transition: width 0.3s; width: 0; }
         
         .search-container { margin: 10px auto; max-width: 800px; position: relative; display: none; }
@@ -115,7 +119,7 @@ const FALLBACK_IMG = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXs
 const API_URL = "https://timesdetodos.com/wp-json/wp/v2/posts?_embed&per_page=15";
 const CACHE_KEY = "tdt_news_cache";
 const CACHE_TIME_KEY = "tdt_news_cache_time";
-const CACHE_DURATION = 10 * 60 * 1000; // 10 minutos em milissegundos
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutos
 
 let allNews = [];
 
@@ -141,7 +145,6 @@ function handleSearch() {
     renderFeed(f);
 }
 
-// Inicializa o app priorizando velocidade usando cache local
 function initApp() {
     const cachedData = localStorage.getItem(CACHE_KEY);
     const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
@@ -149,13 +152,10 @@ function initApp() {
 
     if (cachedData && cachedTime && (now - cachedTime < CACHE_DURATION)) {
         allNews = JSON.parse(cachedData);
-        // Garante ordenação decrescente por data mesmo no cache
         allNews.sort((a, b) => new Date(b.date) - new Date(a.date));
         renderFeed(allNews);
-        // Atualiza em segundo plano silenciosamente
         fetchNewsFromServer(false);
     } else {
-        // Sem cache ou cache expirado, carrega mostrando o loader visual
         fetchNewsFromServer(true);
     }
 }
@@ -168,7 +168,6 @@ async function fetchNewsFromServer(showLoader = true) {
         const res = await fetch(API_URL);
         const data = await res.json();
         
-        // Mapeia e sanitiza os dados da resposta
         const freshNews = data.map(p => ({
             id: p.id,
             title: p.title?.rendered || "Sem título",
@@ -180,12 +179,9 @@ async function fetchNewsFromServer(showLoader = true) {
             img: p._embedded?.['wp:featuredmedia']?.[0]?.source_url || FALLBACK_IMG
         }));
 
-        // Organiza estritamente do mais recente para o mais antigo baseado na data de postagem
         freshNews.sort((a, b) => new Date(b.date) - new Date(a.date));
-
         allNews = freshNews;
         
-        // Atualiza o cache local
         localStorage.setItem(CACHE_KEY, JSON.stringify(allNews));
         localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
 
@@ -224,15 +220,49 @@ function renderFeed(news) {
 function openModal(n) {
     const modal = document.getElementById('modal');
     document.getElementById('modal-body').innerHTML = `
-        <h1 style="margin-bottom:15px; font-size: 1.4rem; line-height: 1.3;">${n.title}</h1>
+        <h1 id="art-title" style="margin-bottom:10px; font-size: 1.4rem; line-height: 1.3;">${n.title}</h1>
         <div style="font-size:0.75rem; color:var(--text-meta); margin-bottom: 15px;">Publicado ${timeSince(n.date)}</div>
+        
+        <button class="btn-copy" id="btn-copy" onclick="copyArticleText()">
+            <i class="far fa-copy"></i> <span>Copiar Artigo</span>
+        </button>
+
         <img src="${n.img}" class="article-img" onerror="this.src='${FALLBACK_IMG}'">
-        <div style="line-height:1.7; font-size:0.95rem;" class="wp-content">${n.content}</div>
+        <div id="art-content" style="line-height:1.7; font-size:0.95rem;" class="wp-content">${n.content}</div>
         <button onclick="window.open('${n.link}')" style="width:100%; padding:15px; background:var(--accent); color:white; border:none; border-radius:12px; margin-top:25px; font-weight:bold; cursor:pointer;">LER NO SITE ORIGINAL</button>
     `;
     modal.style.display = 'block';
     document.body.style.overflow = 'hidden';
     history.pushState({modal:true}, '');
+}
+
+// Nova função para copiar texto limpo para o clipboard
+function copyArticleText() {
+    const title = document.getElementById('art-title').innerText;
+    const contentHtml = document.getElementById('art-content');
+    
+    // Converte o HTML do conteúdo em texto limpo, quebrando linhas nos parágrafos
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = contentHtml.innerHTML;
+    
+    // Adiciona quebras de linha entre parágrafos antes de extrair o texto
+    tempDiv.querySelectorAll('p, br, h1, h2, h3, h4').forEach(el => el.prepend('\n'));
+    const cleanContent = tempDiv.innerText.trim();
+
+    const fullTextToCopy = `${title}\n\n${cleanContent}`;
+
+    navigator.clipboard.writeText(fullTextToCopy).then(() => {
+        const btn = document.getElementById('btn-copy');
+        btn.classList.add('copied');
+        btn.innerHTML = `<i class="fas fa-check"></i> <span>Copiado!</span>`;
+        
+        setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = `<i class="far fa-copy"></i> <span>Copiar Artigo</span>`;
+        }, 2000);
+    }).catch(err => {
+        console.error("Falha ao copiar: ", err);
+    });
 }
 
 window.onpopstate = () => {
