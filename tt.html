@@ -52,12 +52,14 @@
         .article-content { padding: 20px; max-width: 800px; margin: 0 auto; }
         .article-img { width: 100%; border-radius: 20px; margin: 15px 0; }
         
-        /* Botão de Copiar Artigo */
         .btn-copy { display: inline-flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; margin-bottom: 15px; transition: all 0.2s; }
         .btn-copy.copied { background: #10b981; color: white; border-color: #10b981; }
 
         .loader-bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); z-index: 10000; transition: width 0.3s; width: 0; }
         
+        .infinite-loader { text-align: center; padding: 20px 0; color: var(--text-meta); font-size: 0.85rem; font-weight: 600; display: none; }
+        .infinite-loader.active { display: block; }
+
         .search-container { margin: 10px auto; max-width: 800px; position: relative; display: none; }
         .search-container.active { display: block; }
         .search-input { width: 100%; padding: 12px 40px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
@@ -99,6 +101,10 @@
 
 <main class="feed" id="feed"></main>
 
+<div class="infinite-loader" id="infinite-loader">
+    <i class="fas fa-spinner fa-spin"></i> Carregando mais notícias...
+</div>
+
 <nav class="bottom-nav">
     <div class="nav-item active" onclick="window.location.reload()"><i class="fas fa-home"></i>Início</div>
     <div class="nav-item" onclick="toggleSidebar()"><i class="fas fa-bars"></i>Menu</div>
@@ -116,16 +122,21 @@
 
 <script>
 const FALLBACK_IMG = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj1PIdG6RZAkCnYz8E1wnpe11yJzX81_7GxL8akO2vFnl3Dl0aaSVYe5yRlaPIjec4amnPGW83xM5viMIADszhlsmelGtkPTsiYX4hsH40_Wede8FgCQcUSYP3Xagd22ziRSatOneaVAHqfp1WLWriLz140PMjF4Pxyw7MuyiD9-W0mn9N1wVwwjtT3bTlc/s1024/1766117715526_1.jpg";
-const API_URL = "https://timesdetodos.com/wp-json/wp/v2/posts?_embed&per_page=15";
+const BASE_API_URL = "https://timesdetodos.com/wp-json/wp/v2/posts?_embed&per_page=10";
 const CACHE_KEY = "tdt_news_cache";
 const CACHE_TIME_KEY = "tdt_news_cache_time";
 const CACHE_DURATION = 10 * 60 * 1000; // 10 minutos
 
 let allNews = [];
+let currentPage = 1;
+let isLoading = false;
+let hasMoreNews = true;
+let isSearching = false;
 
 window.onload = () => {
     if(localStorage.getItem('dark') === 'true') toggleTheme(true);
     initApp();
+    setupInfiniteScroll();
 };
 
 function toggleSidebar() {
@@ -136,11 +147,23 @@ function toggleSidebar() {
 function toggleSearch() {
     const box = document.getElementById('search-box');
     box.classList.toggle('active');
-    if(box.classList.contains('active')) document.getElementById('search-input').focus();
+    if(box.classList.contains('active')) {
+        document.getElementById('search-input').focus();
+    } else {
+        document.getElementById('search-input').value = "";
+        isSearching = false;
+        renderFeed(allNews);
+    }
 }
 
 function handleSearch() {
     const q = document.getElementById('search-input').value.toLowerCase();
+    if(q.trim() === "") {
+        isSearching = false;
+        renderFeed(allNews);
+        return;
+    }
+    isSearching = true;
     const f = allNews.filter(n => n.title.toLowerCase().includes(q));
     renderFeed(f);
 }
@@ -154,19 +177,41 @@ function initApp() {
         allNews = JSON.parse(cachedData);
         allNews.sort((a, b) => new Date(b.date) - new Date(a.date));
         renderFeed(allNews);
-        fetchNewsFromServer(false);
+        // Atualiza a primeira página discretamente em background
+        fetchNewsFromServer(1, false);
     } else {
-        fetchNewsFromServer(true);
+        fetchNewsFromServer(1, true);
     }
 }
 
-async function fetchNewsFromServer(showLoader = true) {
+async function fetchNewsFromServer(page = 1, showLoader = true) {
+    if (isLoading || !hasMoreNews) return;
+    isLoading = true;
+    
     const bar = document.getElementById('loader-bar');
-    if (showLoader) bar.style.width = '30%';
+    const infLoader = document.getElementById('infinite-loader');
+    
+    if (showLoader && page === 1) bar.style.width = '30%';
+    if (page > 1) infLoader.classList.add('active');
 
     try {
-        const res = await fetch(API_URL);
+        const res = await fetch(`${BASE_API_URL}&page=${page}`);
+        
+        if (res.status === 400 || !res.ok) { // Geralmente indica fim das páginas no WordPress
+            hasMoreNews = false;
+            infLoader.classList.remove('active');
+            isLoading = false;
+            return;
+        }
+
         const data = await res.json();
+        
+        if (data.length === 0) {
+            hasMoreNews = false;
+            infLoader.classList.remove('active');
+            isLoading = false;
+            return;
+        }
         
         const freshNews = data.map(p => ({
             id: p.id,
@@ -179,24 +224,48 @@ async function fetchNewsFromServer(showLoader = true) {
             img: p._embedded?.['wp:featuredmedia']?.[0]?.source_url || FALLBACK_IMG
         }));
 
-        freshNews.sort((a, b) => new Date(b.date) - new Date(a.date));
-        allNews = freshNews;
-        
-        localStorage.setItem(CACHE_KEY, JSON.stringify(allNews));
-        localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
-
-        renderFeed(allNews);
-    } catch (e) {
-        console.error("Erro na requisição: ", e);
-        if (allNews.length === 0) {
-            document.getElementById('feed').innerHTML = `<p style="text-align:center; padding:20px; color:var(--text-meta);">Erro ao carregar. Verifique sua conexão.</p>`;
+        if (page === 1) {
+            allNews = freshNews;
+            localStorage.setItem(CACHE_KEY, JSON.stringify(allNews));
+            localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+        } else {
+            // Remove duplicados se houver cruzamento de requisições
+            const existingIds = new Set(allNews.map(n => n.id));
+            const uniqueFreshNews = freshNews.filter(n => !existingIds.has(n.id));
+            allNews = [...allNews, ...uniqueFreshNews];
         }
+
+        // Organiza do mais recente primeiro
+        allNews.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        // Se o usuário não estiver usando a barra de busca, renderiza a lista completa atualizada
+        if (!isSearching) {
+            renderFeed(allNews);
+        }
+        
+        currentPage = page;
+    } catch (e) {
+        console.error("Erro ao processar requisição: ", e);
     }
     
-    if (showLoader) {
+    isLoading = false;
+    infLoader.classList.remove('active');
+    if (showLoader && page === 1) {
         bar.style.width = '100%';
         setTimeout(() => bar.style.width = '0', 500);
     }
+}
+
+function setupInfiniteScroll() {
+    window.onscroll = () => {
+        // Bloqueia scroll infinito se estiver pesquisando
+        if (isSearching) return; 
+
+        // Ativa a requisição quando faltarem 150px para tocar a parte inferior da janela
+        if ((window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 150) {
+            fetchNewsFromServer(currentPage + 1, true);
+        }
+    };
 }
 
 function renderFeed(news) {
@@ -227,7 +296,7 @@ function openModal(n) {
             <i class="far fa-copy"></i> <span>Copiar Artigo</span>
         </button>
 
-        <img src="${n.img}" class="article-img" onerror="this.src='${FALLBACK_IMG}'">
+        <img src="${n.img}" class="article-img" onerror="this.src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj1PIdG6RZAkCnYz8E1wnpe11yJzX81_7GxL8akO2vFnl3Dl0aaSVYe5yRlaPIjec4amnPGW83xM5viMIADszhlsmelGtkPTsiYX4hsH40_Wede8FgCQcUSYP3Xagd22ziRSatOneaVAHqfp1WLWriLz140PMjF4Pxyw7MuyiD9-W0mn9N1wVwwjtT3bTlc/s1024/1766117715526_1.jpg' || FALLBACK_IMG}">
         <div id="art-content" style="line-height:1.7; font-size:0.95rem;" class="wp-content">${n.content}</div>
         <button onclick="window.open('${n.link}')" style="width:100%; padding:15px; background:var(--accent); color:white; border:none; border-radius:12px; margin-top:25px; font-weight:bold; cursor:pointer;">LER NO SITE ORIGINAL</button>
     `;
@@ -236,16 +305,12 @@ function openModal(n) {
     history.pushState({modal:true}, '');
 }
 
-// Nova função para copiar texto limpo para o clipboard
 function copyArticleText() {
     const title = document.getElementById('art-title').innerText;
     const contentHtml = document.getElementById('art-content');
     
-    // Converte o HTML do conteúdo em texto limpo, quebrando linhas nos parágrafos
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = contentHtml.innerHTML;
-    
-    // Adiciona quebras de linha entre parágrafos antes de extrair o texto
     tempDiv.querySelectorAll('p, br, h1, h2, h3, h4').forEach(el => el.prepend('\n'));
     const cleanContent = tempDiv.innerText.trim();
 
