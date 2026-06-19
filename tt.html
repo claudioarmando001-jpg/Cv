@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Radar News PRO - Times de Todos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #0f172a; --accent: #0284c7; --bg: #f1f5f9; --card: #ffffff;
+            --text: #0f172a; --text-meta: #64748b; --border: #e2e8f0; --radius: 20px; 
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); --sidebar-width: 280px;
+        }
+        body.dark-mode {
+            --bg: #020617; --card: #1e293b; --text: #f8fafc; --text-meta: #94a3b8;
+            --border: #334155; --accent: #38bdf8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 70px; }
+        
+        .logo-main { 
+            font-weight: 800; font-size: 1.1rem; color: var(--accent); 
+            letter-spacing: -1px; cursor: pointer; display: flex; align-items: center; gap: 4px;
+        }
+        .logo-badge { font-size:0.55rem; border:1px solid var(--accent); padding:1px 3px; border-radius:4px; vertical-align: middle; }
+
+        .header { position: sticky; top: 0; z-index: 1000; background: var(--card); border-bottom: 1px solid var(--border); padding: 10px 16px; }
+        .header-top { display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; }
+        
+        .sidebar { position: fixed; top: 0; left: calc(-1 * var(--sidebar-width)); width: var(--sidebar-width); height: 100%; background: var(--card); z-index: 6000; transition: 0.3s; border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; }
+        .sidebar.active { left: 0; }
+        .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 5900; display: none; backdrop-filter: blur(2px); }
+        .sidebar-overlay.active { display: block; }
+
+        .feed { padding: 15px; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 16px; }
+        .news-item { background: var(--card); border-radius: var(--radius); padding: 12px; display: flex; gap: 15px; border: 1px solid var(--border); cursor: pointer; }
+        .news-img { width: 110px; height: 110px; border-radius: 15px; object-fit: cover; }
+        .news-info { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .news-title { font-size: 0.95rem; font-weight: 700; line-height: 1.4; }
+        .news-source { font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; width: fit-content; color: white; text-transform: uppercase; }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0 25px 0; z-index: 2000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-meta); cursor: pointer; font-size: 0.65rem; font-weight: 700; }
+        .nav-item.active { color: var(--accent); }
+
+        .modal { position: fixed; inset: 0; background: var(--card); z-index: 7000; display: none; overflow-y: auto; }
+        .modal-header { position: sticky; top: 0; background: var(--card); padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .article-content { padding: 20px; max-width: 800px; margin: 0 auto; }
+        .article-img { width: 100%; border-radius: 20px; margin: 15px 0; }
+        
+        .loader-bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); z-index: 10000; transition: width 0.3s; width: 0; }
+        
+        .search-container { margin: 10px auto; max-width: 800px; position: relative; display: none; }
+        .search-container.active { display: block; }
+        .search-input { width: 100%; padding: 12px 40px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-meta); }
+    </style>
+</head>
+<body>
+
+<div class="loader-bar" id="loader-bar"></div>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+    <div style="font-weight:800; margin-bottom:20px; display:flex; justify-content:space-between">
+        <div class="logo-main" onclick="window.location.reload()">TIMES DE TODOS</div>
+        <i class="fas fa-times" onclick="toggleSidebar()" style="cursor:pointer"></i>
+    </div>
+    <div style="color: var(--text-meta); font-size: 0.9rem;">Portal de Notícias Desportivas e Gerais.</div>
+</aside>
+
+<header class="header">
+    <div class="header-top">
+        <div style="display:flex; align-items:center; gap:15px">
+            <i class="fas fa-bars" onclick="toggleSidebar()" style="cursor:pointer"></i>
+            <div class="logo-main" onclick="window.location.reload()">
+                TIMES DE TODOS <span class="logo-badge">NEWS</span>
+            </div>
+        </div>
+        <div style="display:flex; gap:15px; align-items:center;">
+            <i class="fas fa-search" onclick="toggleSearch()" style="cursor:pointer"></i>
+            <i class="fas fa-moon" id="theme-icon" onclick="toggleTheme()" style="cursor:pointer"></i>
+        </div>
+    </div>
+    
+    <div class="search-container" id="search-box">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" id="search-input" placeholder="Pesquisar notícias..." oninput="handleSearch()">
+    </div>
+</header>
+
+<main class="feed" id="feed"></main>
+
+<nav class="bottom-nav">
+    <div class="nav-item active" onclick="window.location.reload()"><i class="fas fa-home"></i>Início</div>
+    <div class="nav-item" onclick="toggleSidebar()"><i class="fas fa-bars"></i>Menu</div>
+</nav>
+
+<div class="modal" id="modal">
+    <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:15px">
+            <i class="fas fa-arrow-left" onclick="history.back()" style="cursor:pointer"></i>
+            <div class="logo-main" style="font-size:0.9rem">TIMES DE TODOS</div>
+        </div>
+    </div>
+    <div id="modal-body" class="article-content"></div>
+</div>
+
+<script>
+const FALLBACK_IMG = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj1PIdG6RZAkCnYz8E1wnpe11yJzX81_7GxL8akO2vFnl3Dl0aaSVYe5yRlaPIjec4amnPGW83xM5viMIADszhlsmelGtkPTsiYX4hsH40_Wede8FgCQcUSYP3Xagd22ziRSatOneaVAHqfp1WLWriLz140PMjF4Pxyw7MuyiD9-W0mn9N1wVwwjtT3bTlc/s1024/1766117715526_1.jpg";
+const API_URL = "https://timesdetodos.com/wp-json/wp/v2/posts?_embed&per_page=12";
+
+let allNews = [];
+
+window.onload = async () => {
+    if(localStorage.getItem('dark') === 'true') toggleTheme(true);
+    fetchInitialNews();
+};
+
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('active');
+    document.getElementById('sidebar-overlay').classList.toggle('active');
+}
+
+function toggleSearch() {
+    const box = document.getElementById('search-box');
+    box.classList.toggle('active');
+    if(box.classList.contains('active')) document.getElementById('search-input').focus();
+}
+
+function handleSearch() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    const f = allNews.filter(n => n.title.toLowerCase().includes(q));
+    renderFeed(f);
+}
+
+async function fetchInitialNews() {
+    const bar = document.getElementById('loader-bar');
+    bar.style.width = '30%';
+    try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        
+        allNews = data.map(p => ({
+            id: p.id,
+            title: p.title.rendered,
+            content: p.content.rendered,
+            link: p.link,
+            source: "Times de Todos",
+            color: "#0284c7",
+            date: new Date(p.date),
+            img: p._embedded?.['wp:featuredmedia']?.[0]?.source_url || FALLBACK_IMG
+        }));
+
+        renderFeed(allNews);
+    } catch (e) {
+        document.getElementById('feed').innerHTML = `<p style="text-align:center; padding:20px;">Erro ao carregar notícias. Tente novamente mais tarde.</p>`;
+    }
+    bar.style.width = '100%';
+    setTimeout(() => bar.style.width = '0', 500);
+}
+
+function renderFeed(news) {
+    const feed = document.getElementById('feed');
+    if(news.length === 0) {
+        feed.innerHTML = `<p style="text-align:center; padding:20px; color:var(--text-meta);">Nenhuma notícia encontrada.</p>`;
+        return;
+    }
+    feed.innerHTML = news.map(n => `
+        <div class="news-item" onclick="openModal(${JSON.stringify(n).replace(/"/g, '&quot;')})">
+            <img src="${n.img}" class="news-img" onerror="this.src='${FALLBACK_IMG}'">
+            <div class="news-info">
+                <span class="news-source" style="background:${n.color}">${n.source}</span>
+                <div class="news-title">${n.title}</div>
+                <div style="font-size:0.6rem; color:var(--text-meta)">${timeSince(n.date)}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function openModal(n) {
+    const modal = document.getElementById('modal');
+    document.getElementById('modal-body').innerHTML = `
+        <h1 style="margin-bottom:15px; font-size: 1.4rem; line-height: 1.3;">${n.title}</h1>
+        <div style="font-size:0.75rem; color:var(--text-meta); margin-bottom: 15px;">Publicado ${timeSince(n.date)}</div>
+        <img src="${n.img}" class="article-img" onerror="this.src='${FALLBACK_IMG}'">
+        <div style="line-height:1.7; font-size:0.95rem;" class="wp-content">${n.content}</div>
+        <button onclick="window.open('${n.link}')" style="width:100%; padding:15px; background:var(--accent); color:white; border:none; border-radius:12px; margin-top:25px; font-weight:bold; cursor:pointer;">LER NO SITE ORIGINAL</button>
+    `;
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    history.pushState({modal:true}, '');
+}
+
+window.onpopstate = () => {
+    document.getElementById('modal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+};
+
+function toggleTheme(init = false) {
+    if(!init) document.body.classList.toggle('dark-mode');
+    else document.body.classList.add('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('dark', isDark);
+    document.getElementById('theme-icon').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+}
+
+function timeSince(date) {
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    let interval = seconds / 3600;
+    if (interval > 24) return Math.floor(interval / 24) + " dias atrás";
+    if (interval < 1) {
+        const mins = Math.floor(seconds / 60);
+        return mins < 1 ? "Agora mesmo" : mins + " minutos atrás";
+    }
+    return Math.floor(interval) + " horas atrás";
+}
+</script>
+</body>
+</html>
