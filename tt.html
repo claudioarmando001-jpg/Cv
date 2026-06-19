@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Radar News PRO - Times de Todos</title>
+    <title>Times de Todos - News</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -36,8 +36,9 @@
         .sidebar-overlay.active { display: block; }
 
         .feed { padding: 15px; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 16px; }
-        .news-item { background: var(--card); border-radius: var(--radius); padding: 12px; display: flex; gap: 15px; border: 1px solid var(--border); cursor: pointer; }
-        .news-img { width: 110px; height: 110px; border-radius: 15px; object-fit: cover; }
+        .news-item { background: var(--card); border-radius: var(--radius); padding: 12px; display: flex; gap: 15px; border: 1px solid var(--border); cursor: pointer; transition: transform 0.2s; }
+        .news-item:active { transform: scale(0.98); }
+        .news-img { width: 110px; height: 110px; border-radius: 15px; object-fit: cover; background: #e2e8f0; }
         .news-info { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
         .news-title { font-size: 0.95rem; font-weight: 700; line-height: 1.4; }
         .news-source { font-size: 0.65rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; width: fit-content; color: white; text-transform: uppercase; }
@@ -111,13 +112,16 @@
 
 <script>
 const FALLBACK_IMG = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj1PIdG6RZAkCnYz8E1wnpe11yJzX81_7GxL8akO2vFnl3Dl0aaSVYe5yRlaPIjec4amnPGW83xM5viMIADszhlsmelGtkPTsiYX4hsH40_Wede8FgCQcUSYP3Xagd22ziRSatOneaVAHqfp1WLWriLz140PMjF4Pxyw7MuyiD9-W0mn9N1wVwwjtT3bTlc/s1024/1766117715526_1.jpg";
-const API_URL = "https://timesdetodos.com/wp-json/wp/v2/posts?_embed&per_page=12";
+const API_URL = "https://timesdetodos.com/wp-json/wp/v2/posts?_embed&per_page=15";
+const CACHE_KEY = "tdt_news_cache";
+const CACHE_TIME_KEY = "tdt_news_cache_time";
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutos em milissegundos
 
 let allNews = [];
 
-window.onload = async () => {
+window.onload = () => {
     if(localStorage.getItem('dark') === 'true') toggleTheme(true);
-    fetchInitialNews();
+    initApp();
 };
 
 function toggleSidebar() {
@@ -137,30 +141,66 @@ function handleSearch() {
     renderFeed(f);
 }
 
-async function fetchInitialNews() {
+// Inicializa o app priorizando velocidade usando cache local
+function initApp() {
+    const cachedData = localStorage.getItem(CACHE_KEY);
+    const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
+    const now = Date.now();
+
+    if (cachedData && cachedTime && (now - cachedTime < CACHE_DURATION)) {
+        allNews = JSON.parse(cachedData);
+        // Garante ordenação decrescente por data mesmo no cache
+        allNews.sort((a, b) => new Date(b.date) - new Date(a.date));
+        renderFeed(allNews);
+        // Atualiza em segundo plano silenciosamente
+        fetchNewsFromServer(false);
+    } else {
+        // Sem cache ou cache expirado, carrega mostrando o loader visual
+        fetchNewsFromServer(true);
+    }
+}
+
+async function fetchNewsFromServer(showLoader = true) {
     const bar = document.getElementById('loader-bar');
-    bar.style.width = '30%';
+    if (showLoader) bar.style.width = '30%';
+
     try {
         const res = await fetch(API_URL);
         const data = await res.json();
         
-        allNews = data.map(p => ({
+        // Mapeia e sanitiza os dados da resposta
+        const freshNews = data.map(p => ({
             id: p.id,
-            title: p.title.rendered,
-            content: p.content.rendered,
-            link: p.link,
+            title: p.title?.rendered || "Sem título",
+            content: p.content?.rendered || "",
+            link: p.link || "https://timesdetodos.com",
             source: "Times de Todos",
             color: "#0284c7",
-            date: new Date(p.date),
+            date: p.date ? new Date(p.date).toISOString() : new Date().toISOString(),
             img: p._embedded?.['wp:featuredmedia']?.[0]?.source_url || FALLBACK_IMG
         }));
 
+        // Organiza estritamente do mais recente para o mais antigo baseado na data de postagem
+        freshNews.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        allNews = freshNews;
+        
+        // Atualiza o cache local
+        localStorage.setItem(CACHE_KEY, JSON.stringify(allNews));
+        localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+
         renderFeed(allNews);
     } catch (e) {
-        document.getElementById('feed').innerHTML = `<p style="text-align:center; padding:20px;">Erro ao carregar notícias. Tente novamente mais tarde.</p>`;
+        console.error("Erro na requisição: ", e);
+        if (allNews.length === 0) {
+            document.getElementById('feed').innerHTML = `<p style="text-align:center; padding:20px; color:var(--text-meta);">Erro ao carregar. Verifique sua conexão.</p>`;
+        }
     }
-    bar.style.width = '100%';
-    setTimeout(() => bar.style.width = '0', 500);
+    
+    if (showLoader) {
+        bar.style.width = '100%';
+        setTimeout(() => bar.style.width = '0', 500);
+    }
 }
 
 function renderFeed(news) {
@@ -208,8 +248,8 @@ function toggleTheme(init = false) {
     document.getElementById('theme-icon').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
 }
 
-function timeSince(date) {
-    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+function timeSince(dateString) {
+    const seconds = Math.floor((new Date() - new Date(dateString)) / 1000);
     let interval = seconds / 3600;
     if (interval > 24) return Math.floor(interval / 24) + " dias atrás";
     if (interval < 1) {
